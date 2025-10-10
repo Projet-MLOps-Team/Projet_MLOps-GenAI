@@ -1,0 +1,21 @@
+# Python venv & caches
+.venv/
+__pycache__/
+*.pyc
+
+# Données lourdes/sensibles
+data/*.csv
+!data/sample_*.csv   # autorise de petits échantillons démo si tu veux
+
+# Sorties
+artifacts/
+
+# MLflow
+mlruns/
+mlflow
+mlflow.db
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
