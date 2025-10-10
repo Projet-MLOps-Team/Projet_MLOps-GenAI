@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/106391080984286916/models/m-1ca0a8a54b084d6b9cc8f79a3a0a5998/artifacts
+creation_timestamp: 1760116751004
+experiment_id: '106391080984286916'
+last_updated_timestamp: 1760116751361
+model_id: m-1ca0a8a54b084d6b9cc8f79a3a0a5998
+model_type: null
+name: model_logreg
+source_run_id: b21586d7ce814b07840c3f2475bb430f
+status: 3
+status_message: null
