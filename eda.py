@@ -113,3 +113,8 @@ This dataset contains information about customer loan applications and their def
 *   **default**: The target variable, indicating whether the customer defaulted on the loan (1 for default, 0 for no default).
 *   **debt\_ratio**: The ratio of total debt outstanding to income (calculated feature).
 """
+
+# Save the DataFrame to a CSV file
+datasetfinal.to_csv('datasetfinal.csv', index=False)
+
+print("DataFrame saved to datasetfinal.csv")
