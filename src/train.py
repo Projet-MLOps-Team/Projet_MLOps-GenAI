@@ -149,50 +149,96 @@ def selection_score(m: Dict[str, float]) -> float:
         return m["f1_weighted"]
     return m.get("accuracy", -1.0)
 
+from pathlib import Path
 
-def save_confusion_matrix(y_true, y_pred, class_names: Optional[List[str]], out_path: Path):
-    """Génère et enregistre une matrice de confusion."""
-    try:
-        fig = plt.figure()
-        disp = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred), display_labels=class_names)
-        disp.plot(values_format="d")
-        plt.title("Matrice de confusion")
-        fig.savefig(out_path, bbox_inches="tight", dpi=120)
-    finally:
-        plt.close()
-
-
-def save_roc_curves(y_true, y_prob, classes: List[Any], out_path: Path):
+def save_confusion_matrix(y_true, y_pred, class_names, out_path: Path):
     """
-    Enregistre la/les courbes ROC :
-      - Binaire : 1 courbe
-      - Multi-classes : courbes OvR par classe (si y_prob shape ok)
+    Génère une matrice de confusion en **PNG** lisible (grande taille + haute résolution).
+    - y_true / y_pred : vraies/pseudo étiquettes du jeu de test
+    - class_names : liste des étiquettes (pour afficher les labels)
+    - out_path : chemin de sortie (on force .png au cas où)
     """
+    # On s’assure d’avoir l’extension .png
+    out_path = out_path.with_suffix(".png")
+
+    # Utiliser un backend non-GUI pour éviter les erreurs Tkinter ("main loop")
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+    # Calcul de la matrice de confusion
+    cm = confusion_matrix(y_true, y_pred)
+
+    # figsize + dpi => plus net et plus grand (visible dans MLflow / Explorateur Windows)
+    fig, ax = plt.subplots(figsize=(7, 5), dpi=180)
+
+    # Affichage avec labels + valeurs entières
+    disp = ConfusionMatrixDisplay(cm, display_labels=class_names)
+    disp.plot(ax=ax, values_format="d", colorbar=False, cmap="Blues")
+    ax.set_title("Matrice de confusion")
+    plt.tight_layout()
+
+    # Sauvegarde en PNG (bbox_inches='tight' évite les grands marges blanches)
+    fig.savefig(out_path, bbox_inches="tight")
+
+    # Libère la figure (important pour les scripts batch)
+    plt.close(fig)
+
+
+def save_roc_curves(y_true, y_prob, classes, out_path: Path):
+    """
+    Enregistre la/les courbes ROC en **PNG**.
+    - Binaire : une seule courbe ROC.
+    - Multi-classe : One-vs-Rest (une courbe par classe) si y_prob a la bonne forme.
+
+    y_prob peut venir de predict_proba (shape = [n, n_classes]) ou decision_function.
+    """
+    # Sans probas, on ne peut pas tracer la ROC
     if y_prob is None:
         return
 
-    fig = plt.figure()
-    try:
-        if len(classes) == 2:
-            # Binaire : probabilité classe positive en colonne 1
-            pos = y_prob if y_prob.ndim == 1 else y_prob[:, 1]
-            RocCurveDisplay.from_predictions(y_true, pos, name="ROC")
-            plt.title("Courbe ROC (binaire)")
-        else:
-            # Multi-classes : One-vs-Rest
-            y_bin = label_binarize(y_true, classes=classes)
-            if hasattr(y_prob, "shape") and y_prob.shape[1] == y_bin.shape[1]:
-                for i, cls in enumerate(classes):
-                    RocCurveDisplay.from_predictions(y_bin[:, i], y_prob[:, i], name=str(cls))
-                plt.title("Courbes ROC (multiclasse, OvR)")
-            else:
-                # Dimensions incompatibles -> on ne trace pas
-                plt.close(fig)
-                return
-        fig.savefig(out_path, bbox_inches="tight", dpi=120)
-    finally:
-        plt.close()
+    out_path = out_path.with_suffix(".png")
 
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import RocCurveDisplay
+    from sklearn.preprocessing import label_binarize
+    import numpy as np
+
+    fig, ax = plt.subplots(figsize=(6, 6), dpi=180)
+
+    # Cas **binaire** : on trace une seule courbe
+    if len(classes) == 2:
+        # Si y_prob est 2D (n,2), on prend la colonne 1 = proba de la classe positive
+        pos = y_prob if getattr(y_prob, "ndim", 1) == 1 else y_prob[:, 1]
+        RocCurveDisplay.from_predictions(y_true, pos, ax=ax, name="ROC")
+        ax.set_title("Courbe ROC (binaire)")
+
+    else:
+        # Cas **multi-classe** : on binarise y_true (One-vs-Rest)
+        y_bin = label_binarize(y_true, classes=classes)
+
+        # Vérifie la compatibilité des dimensions (ex : y_prob.shape[1] == nb classes)
+        if hasattr(y_prob, "shape") and y_prob.shape[1] == y_bin.shape[1]:
+            for i, cls in enumerate(classes):
+                RocCurveDisplay.from_predictions(y_bin[:, i], y_prob[:, i], ax=ax, name=str(cls))
+            ax.set_title("Courbes ROC (multiclasse, OvR)")
+        else:
+            # Si dimensions incompatibles, on ne trace rien (cas rare)
+            plt.close(fig)
+            return
+
+    # Petites finitions de lisibilité
+    ax.grid(True, linestyle="--", linewidth=0.6, alpha=0.6)
+    ax.set_xlabel("Taux de faux positifs (FPR)")
+    ax.set_ylabel("Taux de vrais positifs (TPR)")
+    plt.tight_layout()
+
+    fig.savefig(out_path, bbox_inches="tight")
+    plt.close(fig)
 
 # ──────────────────────────────────────────────────────────────
 # 3) ENTRAÎNER UN MODÈLE (1 RUN MLflow NESTED)
