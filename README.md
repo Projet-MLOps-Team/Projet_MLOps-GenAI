@@ -1,4 +1,4 @@
-# 🧠 MLOps × GenAI — Loan Default Assistant
+# 🧠 MLOps × GenAI  — Loan Default Assistant
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)]()
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-orange)]()
