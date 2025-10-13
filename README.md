@@ -72,7 +72,7 @@ python train.py
 # -> models/best_model.joblib  (+ meta.json pour l'ordre des features)
 ```
 - 3 modèles comparés (ex. LogisticRegression, DecisionTree, RandomForest).  
-- Sélection par **ROC AUC**. Ajuste le seuil métier dans `train.py` si besoin.
+- Sélection par **PR AUC**.
 
 ---
 
@@ -106,6 +106,5 @@ docker run -p 8501:8501 loan-assistant
 
 ## 🚀 CI/CD (GitHub Actions)
 - Le workflow **`ci-cd.yaml`** build/push l’image (Docker Hub / ECR).  
-- Secrets à définir dans GitHub : `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (ou variables AWS si ECR).
 
 ---
