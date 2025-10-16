@@ -2,3 +2,4 @@ my_env
 mlruns
 ma_env
 src/__pycache__/
+requirements.txt

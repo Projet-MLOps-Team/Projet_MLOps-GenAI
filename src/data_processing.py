@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-def load_data(path="simulated_data"):
+def load_data():
     data_path = "E:\Formation_Data_Analystic\projet_MLOps_GAI\Projet_MLOps\data\datasetfinal.csv"
     target_col = "default"
 

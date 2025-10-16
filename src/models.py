@@ -12,14 +12,16 @@ def get_models_config():
     return {
         "LogisticRegression": {
             "model": LogisticRegression(random_state=42, solver='liblinear'),
+            "name":"Logistic_Regression",
             # Hyperparamètres à tester pour la Régression Logistique
             "params": {
-                'C': [0.1, 1.0, 10],  # Inverse de la force de régularisation
+                'C': [0.1, 1.0, 10],  
                 'penalty': ['l1', 'l2']
             }
         },
         "RandomForestClassifier": {
             "model": RandomForestClassifier(random_state=42),
+            "name":"Random_Forest",
             # Hyperparamètres à tester pour le Random Forest
             "params": {
                 'n_estimators': [50, 100, 200],  # Nombre d'arbres
@@ -29,6 +31,7 @@ def get_models_config():
 
         "DecisionTreeClassifier": {
             "model": DecisionTreeClassifier(random_state=42),
+            "name":"Decision_Tree",
             # Hyperparamètres à tester pour le Random Forest
             "params": {
                 'criterion': ['gini', 'entropy'], 
