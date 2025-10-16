@@ -3,8 +3,10 @@
 from sklearn.metrics import (
     roc_auc_score, accuracy_score, precision_score, 
     recall_score, f1_score, confusion_matrix, 
-    ConfusionMatrixDisplay, RocCurveDisplay
+    ConfusionMatrixDisplay, RocCurveDisplay, PrecisionRecallDisplay
 )
+
+
 import mlflow
 import numpy as np
 import matplotlib.pyplot as plt
@@ -88,6 +90,63 @@ def log_confusion_matrix_artifact(model, X, y, model_name):
     
     filename = f"{model_name}_confusion_matrix.png"
     plt.savefig(filename, bbox_inches="tight")
+    plt.close(fig)
+
+    mlflow.log_artifact(filename, artifact_path="evaluation_graphs")
+        
+    os.remove(filename)
+
+def log_precision_recall_curve_artifact(model, X, y, model_name):
+    """Génère la courbe Précision-Rappel et l'enregistre dans MLflow."""
+    
+    fig, ax = plt.subplots(figsize=(6, 6))
+    
+    # Génération du graphique de Précision-Rappel
+    PrecisionRecallDisplay.from_estimator(
+        model, X, y,
+        name=f"PR ({model_name})",
+        ax=ax
+    )
+    plt.title(f"Courbe Précision-Rappel - Validation ({model_name})")
+    
+    filename = f"{model_name}_precision_recall_curve.png"
+    plt.savefig(filename)
+    plt.close(fig)
+
+    mlflow.log_artifact(filename, artifact_path="evaluation_graphs")
+    os.remove(filename)
+
+
+# --- NOUVELLE FONCTION 2 : IMPORTANCE DES CARACTÉRISTIQUES ---
+
+def log_feature_importance_artifact(model, X, model_name):
+    """
+    Génère le graphique d'importance des caractéristiques et l'enregistre.
+    Note : Cette fonction est spécifique aux modèles basés sur les arbres (RF, DT).
+    """
+    
+    # 1. Vérification de l'attribut feature_importances_ (spécifique aux modèles d'arbre)
+    if not hasattr(model, 'feature_importances_'):
+        print(f"ATTENTION: {model_name} n'a pas l'attribut 'feature_importances_'. Skip.")
+        return
+
+    importances = model.feature_importances_
+    feature_names = X.columns
+    
+    # 2. Tri et sélection des 10 premières caractéristiques
+    sorted_idx = importances.argsort()[::-1][:10]
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(feature_names[sorted_idx][::-1], importances[sorted_idx][::-1], align='center')
+    
+    plt.xlabel("Importance des Caractéristiques")
+    plt.ylabel("Caractéristiques")
+    plt.title(f"Top 10 Caractéristiques Importantes ({model_name})")
+    plt.tight_layout()
+    
+    # 3. Sauvegarde et Enregistrement
+    filename = f"{model_name}_feature_importance.png"
+    plt.savefig(filename)
     plt.close(fig)
 
     mlflow.log_artifact(filename, artifact_path="evaluation_graphs")
