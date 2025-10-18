@@ -14,3 +14,5 @@ mlruns/
 *.env
 *.log
 ```
+.env
+*.env
