@@ -3,8 +3,8 @@ import mlflow
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
-
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
+import joblib
 
 
 # Importation des modules locaux
@@ -14,10 +14,12 @@ from src.metrics import (evaluate_model, log_metrics, log_roc_curve_artifact,
                          log_confusion_matrix_artifact, log_precision_recall_curve_artifact, log_feature_importance_artifact)
 
 from src.data_artefacts import log_data_sample_artifact, log_eda_report_artifact
+from src.save_best_model import save_model
 
 # Définir l'emplacement où MLflow stocke les données
 # 'file:./mlruns' indique à MLflow d'utiliser le répertoire local 'mlruns'
-mlflow.set_tracking_uri("file:./mlruns")
+#mlflow.set_tracking_uri("file:./mlruns")
+mlflow.set_tracking_uri("http://localhost:5000")
 
 # Alternativement, utilisez la variable d'environnement (si 'set_tracking_uri' posait un problème d'accès):
 # os.environ["MLFLOW_TRACKING_URI"] = "file:./mlruns"
@@ -62,10 +64,15 @@ def run_full_experiment():
     
     # --- 2. Boucle d'Expérimentation ---
 
-    data_artifacts_logged = False
+    N_SPLITS = 5
+    stratified_cv = StratifiedKFold(
+    n_splits=N_SPLITS, 
+    shuffle=True, 
+    random_state=42 # Assure la reproductibilité de la division
+        )
 
     for model_name, config in models_config.items():
-
+        data_artifacts_logged = False
         print(f"\n--- Entraînement et Tuning pour {model_name} ---")
         
         # Utilisation de GridSearchCV pour trouver la meilleure combinaison
@@ -73,9 +80,9 @@ def run_full_experiment():
             estimator=config["model"],
             param_grid=config["params"],
             scoring='roc_auc',
-            cv=3,
+            cv=stratified_cv,
             verbose=0,
-            n_jobs=-1
+            n_jobs=-1 #Utilise toutes les ressources
         )
         # Entraîne sur (Train + Validation) pour trouver les meilleurs paramètres
         grid_search.fit(pd.concat([X_train, X_val]), pd.concat([y_train, y_val]))
@@ -138,28 +145,11 @@ def run_full_experiment():
         with mlflow.start_run(run_id=best_run_id):
             mlflow.set_tag("Evaluation_finale", "Completed")
             log_metrics(test_metrics, prefix="test")
-
-
-
-
-        # Marquer le meilleur modèle comme 'Production'
-        # try:
-        #     client = mlflow.tracking.MlflowClient()
-        #     model_name_for_registry = f"{best_model_name}_Credit_Default"
-            
-        #     # Nous assumons la dernière version du modèle enregistré
-        #     versions = client.get_latest_versions(model_name_for_registry) 
-        #     if versions:
-        #         latest_version = versions[0].version
-
-        #         client.transition_model_version_stage(
-        #             name=model_name_for_registry,
-        #             version=latest_version,
-        #             stage="Production"
-        #         )
-        #         print(f"\nMeilleur modèle ({model_name_for_registry} V{latest_version}) transféré vers 'Production'.")
-        #     else:
-        #         print(f"ATTENTION: Aucune version trouvée pour le modèle {model_name_for_registry}. Impossible de le marquer 'Production'.")
         
-        # except Exception as e:
-        #     print(f"Erreur lors du transfert en 'Production': {e}")
+
+    # Marquer le meilleur modèle comme 'Production' dans Mlflow
+    save_model(best_model_name)
+
+    # Sauvegarder en Local le modèle en .pkl
+    joblib.dump(loaded_model, "best_model_local.pkl")
+    print("✅ Modèle sauvegardé localement : best_model_local.pkl")

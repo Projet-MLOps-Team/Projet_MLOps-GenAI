@@ -2,7 +2,7 @@
 
 from sklearn.metrics import (
     roc_auc_score, accuracy_score, precision_score, 
-    recall_score, f1_score, confusion_matrix, 
+    recall_score, f1_score, confusion_matrix,
     ConfusionMatrixDisplay, RocCurveDisplay, PrecisionRecallDisplay
 )
 
@@ -116,8 +116,6 @@ def log_precision_recall_curve_artifact(model, X, y, model_name):
     mlflow.log_artifact(filename, artifact_path="evaluation_graphs")
     os.remove(filename)
 
-
-# --- NOUVELLE FONCTION 2 : IMPORTANCE DES CARACTÉRISTIQUES ---
 
 def log_feature_importance_artifact(model, X, model_name):
     """
