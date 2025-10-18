@@ -340,3 +340,20 @@ st.markdown("""
     EDA + Training + Prediction + Monitoring
 </div>
 """, unsafe_allow_html=True)
+
+# Configuration des variables d'environnement
+try:
+    # Utilisation de st.secrets pour Streamlit Cloud
+    if hasattr(st, 'secrets') and 'OPENAI_API_KEY' in st.secrets:
+        OPENAI_API_KEY = st.secrets['OPENAI_API_KEY']
+        MLFLOW_TRACKING_URI = st.secrets.get('MLFLOW_TRACKING_URI', 'http://localhost:5000')
+    else:
+        # Utilisation du fichier .env pour l'environnement local
+        from dotenv import load_dotenv
+        load_dotenv()
+        OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+        MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://localhost:5000')
+except Exception as e:
+    st.warning(f"Echec du chargement des variables d'environnement: {e}")
+    OPENAI_API_KEY = ''
+    MLFLOW_TRACKING_URI = 'http://localhost:5000'
