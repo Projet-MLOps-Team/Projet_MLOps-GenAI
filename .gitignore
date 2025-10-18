@@ -1,0 +1,7 @@
+# Ignorer les fichiers sensibles et temporaires
+.env
+__pycache__/
+artifacts/
+*.pkl
+*.log
+.DS_Store
