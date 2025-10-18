@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.Python
+venv/
+env/
+.vscode/
+.idea/
+.DS_Store
+.git/
+.github/
+mlruns/
+.ipynb_checkpoints/
+.env
+*.env
+*.log
+```
