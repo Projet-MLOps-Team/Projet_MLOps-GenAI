@@ -1,10 +1,29 @@
-﻿venv/
+﻿# Virtual Environments
+venv/
 .venv/
 env/
-__pycache__/
-*.pyc
+ENV/
 .env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Streamlit
 .streamlit/secrets.toml
+
+# Models
 artifacts/
 *.pkl
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
