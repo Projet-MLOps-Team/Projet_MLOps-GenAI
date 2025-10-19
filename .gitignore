@@ -1,35 +1,10 @@
-﻿# Python
-__pycache__/
-*.py[cod]
-*.pyc
-*.pyo
-*.pyd
-.Python
-
-# Virtual Environment (중요!)
-venv/
+﻿venv/
 .venv/
 env/
-ENV/
-
-# Streamlit
-.streamlit/secrets.toml
-
-# 환경 변수
+__pycache__/
+*.pyc
 .env
-.env.local
-
-# 모델 artifacts
+.streamlit/secrets.toml
 artifacts/
 *.pkl
-
-# IDE
-.vscode/
-.idea/
-
-# OS
 .DS_Store
-Thumbs.db
-
-# Git
-.git/
