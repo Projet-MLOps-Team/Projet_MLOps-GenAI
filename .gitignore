@@ -1,8 +1,10 @@
 ﻿venv/
 .venv/
+env/
 __pycache__/
 *.pyc
 .env
 .streamlit/secrets.toml
 artifacts/
 *.pkl
+.DS_Store
