@@ -18,6 +18,26 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 import warnings
 warnings.filterwarnings('ignore')
+from openai import OpenAI
+from tavily import TavilyClient
+
+# Configuration des variables d'environnement
+try:
+    if hasattr(st, 'secrets') and ('OPENAI_API_KEY' in st.secrets or 'TAVILY_API_KEY' in st.secrets):
+        OPENAI_API_KEY = st.secrets.get('OPENAI_API_KEY', '')
+        TAVILY_API_KEY = st.secrets.get('TAVILY_API_KEY', '')
+        MLFLOW_TRACKING_URI = st.secrets.get('MLFLOW_TRACKING_URI', 'http://localhost:5000')
+    else:
+        from dotenv import load_dotenv
+        load_dotenv()
+        OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+        TAVILY_API_KEY = os.getenv('TAVILY_API_KEY', '')
+        MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://localhost:5000')
+except Exception as e:
+    st.warning(f"Echec du chargement des variables d'environnement: {e}")
+    OPENAI_API_KEY = ''
+    TAVILY_API_KEY = ''
+    MLFLOW_TRACKING_URI = 'http://localhost:5000'
 
 # Configuration
 st.set_page_config(
@@ -33,6 +53,80 @@ if 'df' not in st.session_state:
     st.session_state.df = None
 if 'training_results' not in st.session_state:
     st.session_state.training_results = None
+
+# Fonction RAG
+def rag_recherche_web(question: str, max_results: int = 5, region: str = "fr", language: str = "fr"):
+    """
+    Recherche et synthèse de contenu à partir du web.
+    
+    Paramètres :
+    - question (str) : la question de l'utilisateur.
+    - max_results (int) : nombre maximum de résultats à extraire du web.
+    - region (str) : région de recherche (par ex. 'fr', 'eu', 'us').
+    - language (str) : langue des résultats ('fr' ou 'en').
+    
+    Retourne :
+    - answer (str) : une réponse générée par OpenAI.
+    - sources (list[str]) : liste des URLs utilisées pour la synthèse.
+    """
+    if not question.strip():
+        return "Veuillez saisir une question.", []
+    if not TAVILY_API_KEY:
+        return "❌ Clé Tavily manquante (TAVILY_API_KEY non trouvée).", []
+    if not OPENAI_API_KEY:
+        return "❌ Clé OpenAI manquante (OPENAI_API_KEY non trouvée).", []
+
+    tavily = TavilyClient(api_key=TAVILY_API_KEY)
+    try:
+        res = tavily.search(
+            query=question,
+            max_results=max_results,
+            include_answer=False,
+            search_depth="advanced"
+        )
+    except Exception as e:
+        return f"Erreur Tavily : {e}", []
+
+    results = res.get("results", []) if isinstance(res, dict) else []
+    contexts, sources = [], []
+    for r in results:
+        content = r.get("content") or r.get("snippet") or ""
+        url = r.get("url") or r.get("source") or ""
+        if content:
+            contexts.append(content)
+        if url:
+            sources.append(url)
+
+    context_block = "\n\n---\n".join(contexts[:max_results]) if contexts else "Aucun contexte trouvé."
+
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
+    prompt = f"""
+Tu es un assistant expert en risque de crédit.
+En te basant UNIQUEMENT sur le contexte ci-dessous, rédige une réponse claire et concise à la question.
+- Langue : français
+- Format : 3 à 5 points clés maximum
+- Ne génère pas de fausses informations
+- Si aucune donnée pertinente n'est trouvée, indique-le simplement.
+- Termine par une section "Sources" si disponible.
+
+Question :
+{question}
+
+Contexte :
+{context_block}
+"""
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+        )
+        answer = resp.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Erreur OpenAI : {e}", sources
+
+    return answer, sources[:max_results]
 
 # Functions
 @st.cache_data
@@ -111,15 +205,16 @@ def load_model():
 
 # UI
 st.title("🏦 MLOps End-to-End: Prédiction Défaut Crédit")
-st.markdown("**Pipeline Complet:** EDA → Training → Prediction → Monitoring")
+st.markdown("**Pipeline Complet:** EDA → Training → Prediction → Recherche Web → Monitoring")
 st.markdown("---")
 
-# Tabs
-tab1, tab2, tab3, tab4 = st.tabs([
+# Tabs  
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📊 1. EDA",
     "🤖 2. Training", 
     "🔮 3. Prediction",
-    "📈 4. Monitoring"
+    "🔎 4. Recherche Web",
+    "📈 5. Monitoring"
 ])
 
 # TAB 1: EDA
@@ -283,54 +378,71 @@ with tab3:
             
             st.info(f"⏱️ Temps: {pred_time*1000:.2f}ms")
 
-# TAB 4: MONITORING
+# TAB 4: RECHERCHE WEB (RAG)
 with tab4:
+    st.header("🔎 Recherche Web (RAG) — Explications & Contexte")
+    st.caption("Utilise Tavily (recherche) + OpenAI (synthèse) pour expliquer un résultat ou trouver des infos récentes.")
+
+    if not TAVILY_API_KEY or not OPENAI_API_KEY:
+        st.error("API keys manquants. Ajoute `OPENAI_API_KEY` et `TAVILY_API_KEY` dans st.secrets ou .env.")
+    else:
+        exemples = [
+            "Pourquoi le risque de défaut est faible pour un client avec FICO 720 et debt ratio 36% en France ?",
+            "Taux de défaut récents sur les prêts conso en Europe (sources fiables) ?",
+            "Principaux facteurs qui augmentent la probabilité de défaut selon la littérature.",
+        ]
+        with st.expander("💡 Exemples de questions", expanded=False):
+            for e in exemples:
+                st.write(f"- {e}")
+
+        col_a, col_b = st.columns([3, 1])
+        with col_a:
+            question = st.text_area("Ta question (FR)", value="", height=100, placeholder=exemples[0])
+        with col_b:
+            max_results = st.slider("Résultats web", 1, 8, 4)
+            region = st.selectbox("Région", ["fr", "eu", "us", "global"], index=0)
+            language = st.selectbox("Langue", ["fr", "en"], index=0)
+
+        lancer = st.button("🔍 Rechercher & Expliquer", type="primary", use_container_width=True)
+
+        if lancer:
+            with st.spinner("Recherche et synthèse en cours..."):
+                answer, sources = rag_recherche_web(
+                    question=question or exemples[0],
+                    max_results=max_results,
+                    region=region,
+                    language=language
+                )
+            st.markdown("### 🔎 Réponse")
+            st.write(answer)
+
+            if sources:
+                st.markdown("### 🔗 Sources")
+                for i, url in enumerate(sources, 1):
+                    st.markdown(f"{i}. {url}")
+            else:
+                st.info("Aucune source détectée par la recherche.")
+
+# TAB 5: MONITORING  
+with tab5:
     st.header("Monitoring des Prédictions")
     
-    if len(st.session_state.predictions) > 0:
-        df_pred = pd.DataFrame(st.session_state.predictions)
-        
-        # Métriques
-        col1, col2, col3, col4 = st.columns(4)
-        total = len(df_pred)
-        defaults = (df_pred['prediction'] == 1).sum()
-        
-        col1.metric("Total", total)
-        col2.metric("Défauts", defaults)
-        col3.metric("Taux", f"{defaults/total*100:.1f}%")
-        col4.metric("Temps Moy.", f"{df_pred['time'].mean()*1000:.2f}ms")
-        
-        # Graphiques
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            fig = px.line(
-                df_pred.reset_index(),
-                x='index', y='probability',
-                title='Évolution des Probabilités'
-            )
-            fig.add_hline(y=0.5, line_dash="dash", line_color="red")
-            st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            fig = px.histogram(
-                df_pred, x='probability',
-                nbins=20,
-                title='Distribution'
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        # Tableau
-        st.subheader("Historique")
-        recent = df_pred.tail(10).copy()
-        recent['prediction'] = recent['prediction'].map({0: '✅', 1: '⚠️'})
-        recent['probability'] = recent['probability'].apply(lambda x: f"{x*100:.1f}%")
-        recent['time'] = recent['time'].apply(lambda x: f"{x*1000:.2f}ms")
-        recent['timestamp'] = recent['timestamp'].dt.strftime('%H:%M:%S')
-        st.dataframe(recent, use_container_width=True, hide_index=True)
-    
+    if not st.session_state.predictions:
+        st.info("Aucune prédiction enregistrée. Utilisez l'onglet Prediction.")
     else:
-        st.info("📭 Aucune prédiction. Allez dans Tab 3!")
+        df_preds = pd.DataFrame(st.session_state.predictions)
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Prédictions", len(df_preds))
+        col2.metric("Défauts Prédits", df_preds['prediction'].sum())
+        col3.metric("Temps Moyen (ms)", f"{df_preds['time'].mean()*1000:.2f}")
+        
+        st.subheader("Historique")
+        st.dataframe(df_preds, use_container_width=True)
+        
+        st.subheader("Distribution Probabilités")
+        fig = px.histogram(df_preds, x='probability', nbins=20, title="Distribution des probabilités de défaut")
+        st.plotly_chart(fig, use_container_width=True)
 
 # Footer
 st.markdown("---")
@@ -340,20 +452,3 @@ st.markdown("""
     EDA + Training + Prediction + Monitoring
 </div>
 """, unsafe_allow_html=True)
-
-# Configuration des variables d'environnement
-try:
-    # Utilisation de st.secrets pour Streamlit Cloud
-    if hasattr(st, 'secrets') and 'OPENAI_API_KEY' in st.secrets:
-        OPENAI_API_KEY = st.secrets['OPENAI_API_KEY']
-        MLFLOW_TRACKING_URI = st.secrets.get('MLFLOW_TRACKING_URI', 'http://localhost:5000')
-    else:
-        # Utilisation du fichier .env pour l'environnement local
-        from dotenv import load_dotenv
-        load_dotenv()
-        OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-        MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://localhost:5000')
-except Exception as e:
-    st.warning(f"Echec du chargement des variables d'environnement: {e}")
-    OPENAI_API_KEY = ''
-    MLFLOW_TRACKING_URI = 'http://localhost:5000'
