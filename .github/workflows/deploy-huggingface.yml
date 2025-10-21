@@ -28,7 +28,7 @@ jobs:
         git clone https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME hf_space
         
         # Copy files excluding .git and hf_space directory
-        rsync -av --exclude='.git' --exclude='hf_space' --exclude='.github' ./ hf_space/
+        rsync -av --exclude='.git' --exclude='hf_space' --exclude='.github' --include='*.csv' ./ hf_space/
         
         # Navigate to HF Space and push
         cd hf_space
