@@ -18,7 +18,7 @@ Ce projet end-to-end combine **Machine Learning** et **Génération augmentée p
 - 📄 **Répondre via RAG** à partir d'un document interne (`ragdoc.pdf`)
 - 🤖 **Faire des prédictions ML** sur le risque de défaut
 - 🧮 **Réaliser des calculs** arithmétiques simples
-- 🌐 **Lancer des recherches web** (DuckDuckGo)
+- 🌐 **Lancer des recherches web** 
 
 ## 🎯 Objectifs du Projet
 
