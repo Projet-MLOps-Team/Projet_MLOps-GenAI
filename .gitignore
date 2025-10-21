@@ -1,11 +1,12 @@
-﻿# Virtual Environments
+# Virtual Environments & Secrets
 venv/
 .venv/
 env/
 ENV/
 .env
+.streamlit/secrets.toml
 
-# Python
+# Python cache & temp files
 __pycache__/
 *.py[cod]
 *.pyc
@@ -13,23 +14,15 @@ __pycache__/
 *.pyd
 .Python
 
-# Streamlit
-.streamlit/secrets.toml
-
-# Models
-artifacts/
-*.pkl
-
-# OS
+# OS / IDE
 .DS_Store
 Thumbs.db
-
-# IDE
 .vscode/
 .idea/
 
-# Python virtual environment
-/venv/
-
-# Nested Git repository (contains mlruns, Dockerfile, etc.)
+# --- CRITICAL ---
+# This nested folder contains mlruns, venv, Dockerfile, etc.
 /Projet_MLOps-GenAI/
+
+# MLflow Database (if it's in the root)
+mlflow.db
