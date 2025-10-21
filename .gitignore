@@ -1,4 +1,4 @@
-﻿# Virtual Environments & Secrets
+# Virtual Environments & Secrets
 venv/
 .venv/
 env/
