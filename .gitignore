@@ -29,3 +29,6 @@ mlflow.db
 
 # Nested Git repository (contains venv, mlruns, Dockerfile, etc.)
 /Projet_MLOps-GenAI/
+
+# Nested Git repository (contains venv, mlruns, Dockerfile, etc.)
+/Projet_MLOps-GenAI/
