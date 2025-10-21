@@ -12,20 +12,26 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     
     - name: Push to Hugging Face Space
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        HF_USERNAME: ${{ secrets.HF_USERNAME }}
+        HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
         
-        git clone https://huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }} hf_space
+        # Clone HF Space to a separate directory
+        git clone https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME hf_space
         
-        cp -r * hf_space/ || true
-        cp -r .* hf_space/ 2>/dev/null || true
+        # Copy files excluding .git and hf_space directory
+        rsync -av --exclude='.git' --exclude='hf_space' --exclude='.github' ./ hf_space/
         
+        # Navigate to HF Space and push
         cd hf_space
         git add .
-        git commit -m "Deploy from GitHub Actions" || echo "No changes"
-        git push https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }}
+        git diff --quiet && git diff --staged --quiet || git commit -m "Deploy from GitHub Actions"
+        git push https://user:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME main
