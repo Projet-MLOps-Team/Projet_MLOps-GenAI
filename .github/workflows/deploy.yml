@@ -1,0 +1,43 @@
+name: Déployer vers Hugging Face Space
+
+on:
+  push:
+    branches: [ "main" ]  # ← ⚠️ Déclenchement uniquement sur main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # Étape 1. Récupérer le dépôt
+      # -------------------------------------------------------------
+      - name: 📥 Checkout du dépôt
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------------------
+      # Étape 2. (Optionnel) Vérification rapide des dépendances
+      # - Permet de détecter les erreurs d'import avant le déploiement
+      # -------------------------------------------------------------
+      - name: 🧪 Vérification dépendances (facultatif)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Installer les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # -------------------------------------------------------------
+      # Étape 3. Push vers le Space Hugging Face
+      # - Remplacer REPO_ID ci-dessous par l'ID exact de votre Space
+      #   ex) Jiwonyi/mlops
+      # -------------------------------------------------------------
+      - name: 🚀 Déployer sur Hugging Face Space
+        uses: huggingface/hub-action@v1
+        with:
+          repo_id: Jiwonyi/mlops      # ← ⚠️ Mettre l'ID EXACT de votre Space
+          repo_type: space            # Espace HF
+          commit_message: "CI: déploiement automatique depuis GitHub Actions"
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}  # ← ⚠️ Secret GitHub requis
