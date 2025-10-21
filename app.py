@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Application MLOps - Prédiction de Défaut de Crédit avec Google Gemini AI
 Version Corrigée Sans Erreurs
@@ -22,7 +22,7 @@ import time
 from pathlib import Path
 import warnings
 import os
-import requests  # <-- Importé pour Tavily
+import requests
 warnings.filterwarnings('ignore')
 
 # Import Google Gemini
@@ -56,8 +56,6 @@ try:
     import google.generativeai as genai
     if GOOGLE_API_KEY:
         genai.configure(api_key=GOOGLE_API_KEY)
-        # !!! CORRECTION 1: Modèle changé pour plus de stabilité
-        # 'gemini-1.5-flash-latest' causait une erreur 404 (v1beta)
         gemini_model = genai.GenerativeModel('gemini-1.5-flash') 
     else:
         gemini_model = None
@@ -77,7 +75,6 @@ if 'chat_messages' not in st.session_state:
 # FONCTIONS PRINCIPALES
 # ========================================
 
-# !!! CORRECTION 2: AJOUT DE LA FONCTION TAVILY MANQUANTE
 @st.cache_data 
 def search_with_tavily(query):
     """Effectue une recherche web avec Tavily"""
@@ -93,12 +90,12 @@ def search_with_tavily(query):
             json={
                 "api_key": TAVILY_API_KEY,
                 "query": query,
-                "search_depth": "basic", # 'basic' pour la rapidité
-                "include_answer": True,  # Demande un résumé
+                "search_depth": "basic",
+                "include_answer": True,
                 "max_results": 5
             }
         )
-        response.raise_for_status() # Lève une exception si erreur HTTP (4xx, 5xx)
+        response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         st.error(f"Erreur lors de la recherche Tavily: {e}")
@@ -129,8 +126,9 @@ def load_model():
 def load_sample_data():
     """Charge les données d'exemple"""
     try:
-        if Path('data/Loan_Data.csv').exists():
-            df = pd.read_csv('data/Loan_Data.csv')
+        # CORRECTION: Changement du chemin data/Loan_Data.csv vers Loan_Data.csv
+        if Path('Loan_Data.csv').exists():
+            df = pd.read_csv('Loan_Data.csv')
         else:
             url = "https://raw.githubusercontent.com/jiwon-yi/Projet_MLOps/main/Loan_Data.csv"
             df = pd.read_csv(url)
@@ -200,7 +198,6 @@ Réponds de manière professionnelle, claire et en français."""
         return response.text
         
     except Exception as e:
-        # Renvoie l'erreur spécifique de Gemini à l'utilisateur
         st.error(f"Erreur Gemini: {str(e)}")
         return f"❌ Erreur: {str(e)}"
 
@@ -490,7 +487,6 @@ with tab1:
         corr_vars = ['fico_score', 'debt_ratio', 'income', 'total_debt_outstanding', 
                      'years_employed', 'credit_lines_outstanding', 'default']
         
-        # Filtre les colonnes pour ne garder que celles qui existent dans le df
         vars_existantes = [v for v in corr_vars if v in df.columns]
         
         if 'default' in vars_existantes:
@@ -538,7 +534,7 @@ with tab2:
     pipeline = load_model()
     
     if pipeline is None:
-        st.error("❌ Modèle non disponible. Fichier `artifacts/best_model.joblib` requis.")
+        st.error("❌ Modèle non disponible. Fichier `artifacts/best_model.pkl` requis.")
     else:
         st.success("✅ Modèle ML opérationnel")
         
@@ -703,7 +699,7 @@ with tab2:
             start_time = time.time()
             
             input_df = pd.DataFrame({
-                'customer_id': [0], # ID Fictif
+                'customer_id': [0],
                 'credit_lines_outstanding': [credit_lines],
                 'loan_amt_outstanding': [loan_amt],
                 'total_debt_outstanding': [total_debt],
@@ -713,23 +709,15 @@ with tab2:
                 'debt_ratio': [debt_ratio]
             })
             
-            # S'assure que l'ordre des colonnes correspond au modèle
-            # (Cette liste doit correspondre EXACTEMENT à l'entraînement)
             try:
-                # Essayez d'obtenir les noms de features depuis le pipeline
-                # C'est la méthode la plus robuste si votre pipeline les stocke
                 feature_names = pipeline.feature_names_in_
             except AttributeError:
-                # Sinon, utilisez une liste codée en dur (moins robuste)
                 st.warning("Impossible de récupérer les 'feature_names_in_'. Utilisation d'une liste par défaut.")
                 feature_names = ['credit_lines_outstanding', 'loan_amt_outstanding', 
                                  'total_debt_outstanding', 'income', 'years_employed', 
                                  'fico_score', 'debt_ratio']
-                # Supprime customer_id qui n'est pas une feature
                 input_df = input_df.drop(columns=['customer_id'])
 
-
-            # Réorganise les colonnes du DataFrame pour correspondre
             try:
                 input_data_ordered = input_df[feature_names]
             except KeyError:
@@ -834,10 +822,8 @@ with tab2:
 with tab3:
     st.header("💬 Assistant IA & Recherche Web")
     
-    # Sub-tabs pour les deux fonctionnalités
     subtab1, subtab2 = st.tabs(["🤖 Chatbot IA", "🔍 Recherche Web"])
     
-    # SUB-TAB 1: Gemini Chatbot
     with subtab1:
         st.markdown("**Powered by Google Gemini 1.5 Flash** 🤖")
         
@@ -852,12 +838,10 @@ with tab3:
         else:
             st.success("✅ Chatbot opérationnel")
             
-            # Affichage de l'historique
             for message in st.session_state.chat_messages:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
             
-            # Zone de saisie
             if prompt := st.chat_input("💬 Posez votre question sur le risque crédit..."):
                 st.session_state.chat_messages.append({"role": "user", "content": prompt})
                 with st.chat_message("user"):
@@ -880,14 +864,12 @@ Contexte de la dernière prédiction:
                             st.markdown(response)
                             st.session_state.chat_messages.append({"role": "assistant", "content": response})
                         else:
-                            # L'erreur est déjà gérée dans chat_with_gemini
                             pass
             
             if st.button("🔄 Nouvelle Conversation"):
                 st.session_state.chat_messages = []
                 st.rerun()
     
-    # SUB-TAB 2: Tavily Web Search
     with subtab2:
         st.markdown("**Powered by Tavily Search API** 🔍")
         
@@ -918,18 +900,15 @@ Contexte de la dernière prédiction:
             if st.button("🔍 Rechercher", type="primary"):
                 if search_query:
                     with st.spinner("🔎 Recherche en cours..."):
-                        # C'est ici que 'search_with_tavily' est appelée
                         results = search_with_tavily(search_query) 
                         
                         if results and 'results' in results:
                             st.markdown("### 📰 Résultats de recherche")
                             
-                            # Résumé si disponible
                             if 'answer' in results and results['answer']:
                                 st.info(f"**💡 Résumé:** {results['answer']}")
                                 st.markdown("---")
                             
-                            # Affichage des résultats
                             for idx, result in enumerate(results['results'][:5], 1):
                                 with st.expander(f"📄 {idx}. {result.get('title', 'Sans titre')}"):
                                     st.markdown(f"**🔗 Source:** [{result.get('url', '')}]({result.get('url', '')})")
@@ -1008,14 +987,14 @@ with tab5:
     
     ### 🤖 Modèle ML
     
-    **Algorithme:** Random Forest Classifier (via `best_model.joblib`)
+    **Algorithme:** Random Forest Classifier (via `best_model.pkl`)
     **Performance (Exemple):** ~85% accuracy, AUC-ROC ~91%
     **Temps prédiction:** < 100ms
     
     ### 🛠️ Stack Technique
     
     - **ML:** scikit-learn, pandas, numpy, joblib
-    - **Tracking:** MLflow (utilisé pour générer `best_model.joblib`)
+    - **Tracking:** MLflow (utilisé pour générer `best_model.pkl`)
     - **Interface:** Streamlit + Plotly
     - **IA:** Google Gemini (via `google-generativeai`)
     - **Recherche:** Tavily AI (via `requests`)
