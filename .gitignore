@@ -17,3 +17,8 @@ __pycache__/
 mlruns/
 notebooks/
 # ⚠️ Si le modèle est volumineux, assurez-vous que LFS est en place, sinon il sera ignoré
+
+artifacts/*
+!artifacts/.gitattributes
+!artifacts/best_model.joblib
+
