@@ -1,34 +1,19 @@
-# Virtual Environments & Secrets
-venv/
-.venv/
-env/
-ENV/
-.env
-.streamlit/secrets.toml
-
-# Python cache & temp files
+# -----------------------------
+# .dockerignore
+# -----------------------------
+.venv
 __pycache__/
-*.py[cod]
 *.pyc
 *.pyo
 *.pyd
-.Python
-
-# OS / IDE
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# --- CRITICAL ---
-# This nested folder contains mlruns, venv, Dockerfile, etc.
-/Projet_MLOps-GenAI/
-
-# MLflow Database (if it's in the root)
-mlflow.db
-
-# Nested Git repository (contains venv, mlruns, Dockerfile, etc.)
-/Projet_MLOps-GenAI/
-
-# Nested Git repository (contains venv, mlruns, Dockerfile, etc.)
-/Projet_MLOps-GenAI/
+*.log
+*.sqlite
+*.db
+.git
+.gitignore
+.gitattributes
+.vscode
+.ipynb_checkpoints
+mlruns/
+notebooks/
+# ⚠️ Si le modèle est volumineux, assurez-vous que LFS est en place, sinon il sera ignoré
