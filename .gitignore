@@ -26,3 +26,6 @@ Thumbs.db
 
 # MLflow Database (if it's in the root)
 mlflow.db
+
+# Nested Git repository (contains venv, mlruns, Dockerfile, etc.)
+/Projet_MLOps-GenAI/
