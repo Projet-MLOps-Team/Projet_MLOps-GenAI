@@ -1,1 +1,0 @@
-{'model__max_depth': [None, 5, 10, 15, 20, 30], 'model__min_samples_split': [2, 5, 10], 'model__min_samples_leaf': [1, 2, 4], 'model__max_features': [None, 'sqrt', 'log2']}
