@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/c3b30d610d42474b9417a990f3d9985d/artifacts
+end_time: 1761033590704
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: c3b30d610d42474b9417a990f3d9985d
+run_name: clumsy-wasp-982
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761033577630
+status: 3
+tags: []
+user_id: LENOVO

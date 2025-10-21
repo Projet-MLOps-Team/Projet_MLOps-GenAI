@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/6c32208aba4b4f3f889a7c76c403fe6d/artifacts
+end_time: 1761031638183
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 6c32208aba4b4f3f889a7c76c403fe6d
+run_name: skittish-trout-476
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761031619324
+status: 3
+tags: []
+user_id: LENOVO

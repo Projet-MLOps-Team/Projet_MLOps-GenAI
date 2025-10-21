@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/1bf112e87fd4453d91d6b214caf3b42e/artifacts
+end_time: 1761023430505
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 1bf112e87fd4453d91d6b214caf3b42e
+run_name: magnificent-cub-993
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761023059343
+status: 3
+tags: []
+user_id: LENOVO

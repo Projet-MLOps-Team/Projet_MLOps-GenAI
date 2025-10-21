@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/e48301ac5f9c4361b99c873641e80c2a/artifacts
+end_time: 1761023509187
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: e48301ac5f9c4361b99c873641e80c2a
+run_name: languid-shark-595
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761023502792
+status: 3
+tags: []
+user_id: LENOVO

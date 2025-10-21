@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/be610b0d34124cafb3335ed923522c9f/artifacts
+end_time: 1761023038298
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: be610b0d34124cafb3335ed923522c9f
+run_name: amusing-shrew-801
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761023030529
+status: 3
+tags: []
+user_id: LENOVO

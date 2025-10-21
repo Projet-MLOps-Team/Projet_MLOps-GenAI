@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/2066dda066054e3fa164edea06457316/artifacts
+end_time: 1761021937745
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 2066dda066054e3fa164edea06457316
+run_name: orderly-ape-894
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761021918067
+status: 3
+tags: []
+user_id: LENOVO

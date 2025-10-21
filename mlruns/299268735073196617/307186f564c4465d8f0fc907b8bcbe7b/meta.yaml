@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/307186f564c4465d8f0fc907b8bcbe7b/artifacts
+end_time: 1761041232441
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 307186f564c4465d8f0fc907b8bcbe7b
+run_name: silent-goat-258
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761040706683
+status: 3
+tags: []
+user_id: LENOVO

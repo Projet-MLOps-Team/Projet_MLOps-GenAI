@@ -1,0 +1,18 @@
+aliases: []
+creation_timestamp: 1761042142086
+current_stage: Production
+deployment_job_state: null
+description: Best pipeline from run a09e6b4491c741598e39a6e3de339a0f (logreg)
+last_updated_timestamp: 1761042142276
+metrics: []
+model_id: m-c6074118595645359b4a7fa7b4bf77f0
+name: mlops_best
+params: {}
+run_id: a09e6b4491c741598e39a6e3de339a0f
+run_link: null
+source: models:/m-c6074118595645359b4a7fa7b4bf77f0
+status: READY
+status_message: null
+storage_location: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/models/m-c6074118595645359b4a7fa7b4bf77f0/artifacts
+user_id: null
+version: 1

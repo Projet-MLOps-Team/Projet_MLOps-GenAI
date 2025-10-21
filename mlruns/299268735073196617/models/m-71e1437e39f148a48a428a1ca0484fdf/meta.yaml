@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/models/m-71e1437e39f148a48a428a1ca0484fdf/artifacts
+creation_timestamp: 1761020044833
+experiment_id: '299268735073196617'
+last_updated_timestamp: 1761020054601
+model_id: m-71e1437e39f148a48a428a1ca0484fdf
+model_type: null
+name: model_random_forest
+source_run_id: 0561417988e144238bfa9eaee551e431
+status: 2
+status_message: null

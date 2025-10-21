@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/1baac10576624c7caaaf448f7d349688/artifacts
+end_time: 1761018924679
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 1baac10576624c7caaaf448f7d349688
+run_name: decision_tree
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761018906951
+status: 3
+tags: []
+user_id: LENOVO

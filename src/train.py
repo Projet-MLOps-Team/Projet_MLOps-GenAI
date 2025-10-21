@@ -31,6 +31,16 @@ Prérequis (requirements.txt) :
 """
 
 from __future__ import annotations
+
+import os
+os.environ["MPLBACKEND"] = "Agg"
+import matplotlib
+matplotlib.use("Agg")
+
+from sklearn.base import clone
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import StratifiedKFold, RandomizedSearchCV
+
 import argparse
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
@@ -45,6 +55,7 @@ import joblib
 import mlflow
 import mlflow.sklearn
 from mlflow.models import infer_signature
+from mlflow import MlflowClient
 
 # Prétraitement & modèles sklearn
 from sklearn.compose import ColumnTransformer
@@ -346,14 +357,19 @@ def train_one(
     }
 
     with mlflow.start_run(run_name=name, nested=True):
-        # 3) Construire l'estimateur (tuning éventuel)
-        est = estimator
+        # 3) Construire le PIPELINE de base (préproc + modèle)
+        base_pipe = Pipeline(steps=[
+            ("preprocess", preproc),
+            ("model", estimator)
+        ])
+    
+        # 3bis) Si tuning: RandomizedSearchCV autour du PIPELINE
         if tune:
             cv = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
-            est = RandomizedSearchCV(
-                estimator=estimator,
-                param_distributions=grids.get(name, {}),
-                n_iter=25 if name == "random_forest" else 20,  # un peu plus d'itérations pour RF
+            pipe = RandomizedSearchCV(
+                estimator=base_pipe,                        # <-- on tune le PIPELINE
+                param_distributions=grids.get(name, {}),   # grilles en "model__*"
+                n_iter=25 if name == "random_forest" else 20,
                 scoring=scoring,
                 n_jobs=-1,
                 cv=cv,
@@ -361,47 +377,49 @@ def train_one(
                 random_state=random_state,
                 verbose=0,
             )
-
-        # 4) Pipeline complet = Prétraitement -> Modèle (ou SearchCV)
-        pipe = Pipeline(steps=[("preprocess", preproc), ("model", est)])
-
-        # 5) **Validation interne** pour choisir un seuil (binaire seulement)
-        best_thr = 0.5
-        best_f1_val = None
+        else:
+            pipe = base_pipe
+    
+        # 4) Validation interne sur X_train pour trouver le SEUIL optimal (F1+)
+        best_thr, best_f1_val = 0.5, np.nan
         if n_classes == 2:
-            X_tr, X_val, y_tr, y_val = train_test_split(
-                X_train, y_train, test_size=0.2, random_state=random_state, stratify=y_train
+            # split interne
+            X_tr, X_val, y_tr, y_val, w_tr, w_val = train_test_split(
+                X_train, y_train, sample_w_full, test_size=0.2,
+                random_state=random_state, stratify=y_train
             )
-            w_tr = compute_sample_weight(class_weight="balanced", y=y_tr)
-            # fit temporaire sur le sous-ensemble d'entraînement
-            pipe.fit(X_tr, y_tr, **{"model__sample_weight": w_tr})
-            # probas sur validation
+    
+            # on fit un clone du pipeline de base (sans SearchCV) pour la validation
+            pipe_val = clone(base_pipe)
+            pipe_val.fit(X_tr, y_tr, **{"model__sample_weight": w_tr})
+    
             y_val_prob = None
             try:
-                y_val_prob = pipe.predict_proba(X_val)[:, 1]
+                y_val_prob = pipe_val.predict_proba(X_val)[:, 1]
             except Exception:
                 pass
+            
             if y_val_prob is not None:
                 thr, f1v, recv = best_threshold_by_f1(y_val.values, y_val_prob)
                 best_thr, best_f1_val = float(thr), float(f1v)
-                mlflow.log_params({
-                    "opt_threshold_from_val": best_thr,
-                })
+                mlflow.log_params({"opt_threshold_from_val": best_thr})
                 mlflow.log_metrics({
                     "val_best_f1_positive": best_f1_val,
                     "val_recall_at_best_thr": recv
                 })
-
-        # 6) Ré-entraîner **sur tout X_train** avec les poids complets
+    
+        # 5) Ré-entraîner sur tout X_train (SearchCV ou pipeline simple)
         pipe.fit(X_train, y_train, **{"model__sample_weight": sample_w_full})
-
-        # 7) Si tuning : logger les meilleurs hyperparamètres (lisibles)
+    
+        # 6) Si tuning : logger les meilleurs hyperparamètres
         try:
-            if tune and hasattr(pipe.named_steps["model"], "best_params_"):
-                best_params = strip_prefix(pipe.named_steps["model"].best_params_, "model__")
+            if tune and hasattr(pipe, "best_params_"):
+                best_params = strip_prefix(pipe.best_params_, "model__")
                 mlflow.log_params({f"best_{k}": v for k, v in best_params.items()})
         except Exception:
             pass
+
+
 
         # 8) Prédictions (classes + probabilités si dispo)
         y_pred = pipe.predict(X_test)
@@ -461,25 +479,38 @@ def train_one(
             save_confusion_matrix(y_test, y_pred_opt, class_names, cm_opt_path)
             if cm_opt_path.exists(): mlflow.log_artifact(str(cm_opt_path))
 
-        # 13) Log du pipeline entraîné + signature + input_example (supprime les warnings)
+        # 13) Log du pipeline entraîné + signature + input_example
         input_example = X_train.head(5)
-        signature = None
         try:
+            from mlflow.models import infer_signature
             signature = infer_signature(input_example, pipe.predict(input_example))
         except Exception:
-            pass
+            signature = None
 
-        model_name = f"model_{name}"
-        model_uri = log_model_compat(
-            pipe, model_name=model_name, signature=signature, input_example=input_example
+        # Marqueur pour vérifier qu'on est bien DANS le run enfant
+        mlflow.log_text("checkpoint_before_log_model", "debug_marker.txt")
+
+        # NOM D'ARTIFACT STABLE
+        artifact_path = f"model_{name}"  # ex: model_logreg, model_random_forest
+
+        # Log du modèle (pas de try/except : si ça casse, on veut l'erreur)
+        print(f"[{name}] Logging model to artifact_path='{artifact_path}' ...")
+        mlflow.sklearn.log_model(
+            sk_model=pipe,
+            artifact_path=artifact_path,     # warning de dépréciation = OK
+            signature=signature,
+            input_example=input_example,
         )
+        model_uri = mlflow.get_artifact_uri(artifact_path)  # runs:/<run_id>/model_*
+        mlflow.log_param("logged_model_uri", model_uri)
+        print(f"[{name}] Model logged at: {model_uri}")
 
         return {
             "name": name,
             "pipeline": pipe,
             "metrics": mets,
             "model_uri": model_uri,
-            "opt_threshold": float(best_thr) if n_classes == 2 else None
+            "opt_threshold": float(best_thr) if n_classes == 2 else None,
         }
 
 
@@ -500,6 +531,12 @@ def main():
     parser.add_argument("--register-best", action="store_true", help="Enregistre le meilleur modèle dans le Model Registry")
     parser.add_argument("--registry-name", type=str, default="mlops_best", help="Nom du Registered Model (onglet Models)")
     args = parser.parse_args()
+
+    # 1) Initialiser MLflow (à coller ici)
+    import mlflow, mlflow.sklearn
+    mlflow.set_tracking_uri(args.mlflow_uri)     # ex: "mlruns"
+    mlflow.set_experiment(args.experiment)       # ex: "mlops-training"
+    mlflow.sklearn.autolog(disable=True)         # coupe l’autolog sklearn (évite les warnings)
 
     # 1) Initialiser MLflow (emplacement des runs + expérience)
     #    -> on force un chemin ABSOLU pour éviter les stores 'cassés' (meta.yaml manquants)
@@ -590,6 +627,30 @@ def main():
         joblib.dump(best["pipeline"], best_path)
         mlflow.log_artifact(str(best_path))
 
+        # ---- LOG + REGISTER (méthode tutoriel MLflow) ----
+        from mlflow.models import infer_signature
+        input_example = X_train.head(5)
+        try:
+            sig = infer_signature(input_example, best["pipeline"].predict(input_example))
+        except Exception:
+            sig = None
+
+        # Cette ligne loggue l'artifact 'best_model/' ET crée/actualise le Registered Model
+        model_info = mlflow.sklearn.log_model(
+            sk_model=best["pipeline"],
+            name="best_model",                        # dossier artifact dans le run parent
+            input_example=input_example,
+            signature=sig,
+            registered_model_name=args.registry_name if args.register_best else None
+        )
+
+        # URI à réutiliser au besoin (traçabilité)
+        best_model_uri = mlflow.get_artifact_uri("best_model")   # ex: runs:/<parent_run_id>/best_model
+        mlflow.log_param("best_model_uri", best_model_uri)
+        print(f"[PARENT] Best model logged at: {best_model_uri}")
+        if args.register_best:
+            print(f"[MODEL REGISTRY] Created/updated '{args.registry_name}'. URI: {model_info.model_uri}")
+
         # 11) Log d'infos utiles (pratique pour filtrer dans l'UI)
         mlflow.log_params({
             "best_model": best["name"],
@@ -602,14 +663,34 @@ def main():
             "cv_splits": args.cv_splits if args.tune else 0,
         })
 
-        # 12) (Optionnel) Enregistrer le meilleur dans le Model Registry
+        # 12) (Optionnel) Promotion automatique via MlflowClient
         if args.register_best:
-            try:
-                print(f"\nEnregistrement dans le Model Registry : {args.registry_name}")
-                mlflow.register_model(model_uri=best["model_uri"], name=args.registry_name)
-                print("→ OK. Consulte l’onglet 'Models' dans l’UI MLflow.")
-            except Exception as e:
-                print(f"Impossible d'enregistrer le modèle dans le registry : {e}")
+            from mlflow import MlflowClient
+            client = MlflowClient()
+            latest_none = client.get_latest_versions(args.registry_name, stages=["None"])
+            if latest_none:
+                v = latest_none[0].version
+                # Décrire la version (propre)
+                client.update_model_version(
+                    name=args.registry_name,
+                    version=v,
+                    description=f"Best pipeline from run {mlflow.active_run().info.run_id} ({best['name']})"
+                )
+                # Promouvoir en Production et archiver l'ancienne Prod
+                client.transition_model_version_stage(
+                    name=args.registry_name,
+                    version=v,
+                    stage="Production",
+                    archive_existing_versions=True
+                )
+                # Alias pratique (facultatif)
+                try:
+                    client.set_registered_model_alias(name=args.registry_name, alias="champion", version=v)
+                except Exception:
+                    pass
+                print(f"[MODEL REGISTRY] {args.registry_name} v{v} → Production (alias 'champion').")
+            else:
+                print("[MODEL REGISTRY] aucune version au stage 'None'.")
 
         # 13) Récapitulatif console
         print("\n=== RÉSUMÉ ===")
@@ -621,3 +702,7 @@ def main():
 # Point d'entrée
 if __name__ == "__main__":
     main()
+
+
+#python src\train.py --csv data\datasetfinal.csv --target default --mlflow-uri mlruns --tune --cv-splits 5 --register-best --registry-name mlops_best
+#mlflow models serve --model-uri "models:/mlops_best/Production" --port 5001 --host 0.0.0.0 --no-conda

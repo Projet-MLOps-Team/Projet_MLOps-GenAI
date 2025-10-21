@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/52dca115e91c40faa6c7165f8bc3a445/artifacts
+end_time: 1761022519805
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 52dca115e91c40faa6c7165f8bc3a445
+run_name: clean-trout-272
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761022513906
+status: 3
+tags: []
+user_id: LENOVO

@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/1baae7f7464e41f597f999c7cbf242cb/artifacts
+end_time: 1761023509187
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 1baae7f7464e41f597f999c7cbf242cb
+run_name: popular-croc-421
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761023502792
+status: 3
+tags: []
+user_id: LENOVO

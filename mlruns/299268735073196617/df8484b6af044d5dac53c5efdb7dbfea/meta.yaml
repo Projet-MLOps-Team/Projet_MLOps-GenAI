@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/df8484b6af044d5dac53c5efdb7dbfea/artifacts
+end_time: 1761037251767
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: df8484b6af044d5dac53c5efdb7dbfea
+run_name: bouncy-dove-621
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761037232984
+status: 3
+tags: []
+user_id: LENOVO

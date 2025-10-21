@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/5500435802854abd901be94fbd909bef/artifacts
+end_time: 1761033617316
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 5500435802854abd901be94fbd909bef
+run_name: amusing-gull-377
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761033611123
+status: 3
+tags: []
+user_id: LENOVO

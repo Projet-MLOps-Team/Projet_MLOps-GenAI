@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/53656a0cc70c4a6ba051ae5c54a50c47/artifacts
+end_time: 1761037251767
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 53656a0cc70c4a6ba051ae5c54a50c47
+run_name: languid-worm-349
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761037232984
+status: 3
+tags: []
+user_id: LENOVO

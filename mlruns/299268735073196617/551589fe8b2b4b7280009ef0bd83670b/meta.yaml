@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/551589fe8b2b4b7280009ef0bd83670b/artifacts
+end_time: 1761040600746
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 551589fe8b2b4b7280009ef0bd83670b
+run_name: fun-rook-943
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761040582226
+status: 3
+tags: []
+user_id: LENOVO

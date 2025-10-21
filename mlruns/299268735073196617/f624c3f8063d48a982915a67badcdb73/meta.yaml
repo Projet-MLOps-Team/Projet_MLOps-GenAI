@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/f624c3f8063d48a982915a67badcdb73/artifacts
+end_time: 1761033590704
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: f624c3f8063d48a982915a67badcdb73
+run_name: zealous-whale-78
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761033577630
+status: 3
+tags: []
+user_id: LENOVO

@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/f5bc6c87e40a4a11b883a462386ce7c8/artifacts
+end_time: 1761042135520
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: f5bc6c87e40a4a11b883a462386ce7c8
+run_name: random_forest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761041757972
+status: 3
+tags: []
+user_id: LENOVO
