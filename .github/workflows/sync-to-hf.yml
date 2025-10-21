@@ -1,0 +1,33 @@
+name: Synchronisation avec l'Espace Hugging Face
+
+# 1. Quand exécuter ce workflow CI/CD ?
+on:
+  # À chaque fois qu'un 'push' est fait sur la branche 'main'
+  push:
+    branches: [main]
+    
+  # (Optionnel) Permet de lancer ce workflow manuellement depuis l'onglet Actions
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    # Utilise la dernière version d'Ubuntu comme environnement d'exécution
+    runs-on: ubuntu-latest
+    steps:
+      # 2. Récupérer (checkout) le code du dépôt GitHub (y compris les fichiers LFS)
+      - uses: actions/checkout@v3
+        with:
+          # Récupère tout l'historique (nécessaire pour le push)
+          fetch-depth: 0
+          # S'assure de récupérer les fichiers Git LFS (comme votre modèle .joblib)
+          lfs: true
+
+      # 3. Pousser (push) de force vers l'Espace Hugging Face (le cœur du CI/CD)
+      - name: Push vers l'Espace Hugging Face
+        env:
+          # Utilise le Secret GitHub (HF_TOKEN) que nous avons créé à l'étape 2
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Configure l'URL avec votre nom d'utilisateur (Jiwonyi) et le nom de l'espace (mlops)
+          # Pousse de force ( --force ) le code de GitHub (main) vers l'espace HF (main)
+          git push https://Jiwonyi:$HF_TOKEN@huggingface.co/spaces/Jiwonyi/mlops main --force
