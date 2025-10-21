@@ -27,3 +27,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Python virtual environment
+/venv/
+
+# Nested Git repository (contains mlruns, Dockerfile, etc.)
+/Projet_MLOps-GenAI/
