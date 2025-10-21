@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/8a0f9fd63a9245f8a120b2af1ac929e5/artifacts
+end_time: 1761040671336
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 8a0f9fd63a9245f8a120b2af1ac929e5
+run_name: fun-shoat-818
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761040655080
+status: 3
+tags: []
+user_id: LENOVO

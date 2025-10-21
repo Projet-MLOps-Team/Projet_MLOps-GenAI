@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/bbd5987f958c4acd8d545d78bcebe25b/artifacts
+end_time: 1761023038298
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: bbd5987f958c4acd8d545d78bcebe25b
+run_name: sedate-eel-350
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761023030529
+status: 3
+tags: []
+user_id: LENOVO

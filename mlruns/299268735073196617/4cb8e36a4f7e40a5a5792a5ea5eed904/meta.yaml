@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/4cb8e36a4f7e40a5a5792a5ea5eed904/artifacts
+end_time: 1761023983703
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 4cb8e36a4f7e40a5a5792a5ea5eed904
+run_name: bouncy-wasp-869
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761023977351
+status: 3
+tags: []
+user_id: LENOVO

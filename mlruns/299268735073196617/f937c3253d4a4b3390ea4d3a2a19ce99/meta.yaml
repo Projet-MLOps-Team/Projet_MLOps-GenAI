@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/f937c3253d4a4b3390ea4d3a2a19ce99/artifacts
+end_time: 1761035443514
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: f937c3253d4a4b3390ea4d3a2a19ce99
+run_name: train_classification
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761034819050
+status: 3
+tags: []
+user_id: LENOVO

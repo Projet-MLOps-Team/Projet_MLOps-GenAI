@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/cf0990ba5e9e46e28a80d2f01f126dba/artifacts
+end_time: 1761033079224
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: cf0990ba5e9e46e28a80d2f01f126dba
+run_name: receptive-fox-57
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761031670925
+status: 3
+tags: []
+user_id: LENOVO

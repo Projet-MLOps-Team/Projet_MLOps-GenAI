@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/models/m-3d6f0b8d3f184ababbca2fb4d6c8a8d8/artifacts
+creation_timestamp: 1761034894581
+experiment_id: '299268735073196617'
+last_updated_timestamp: 1761034919620
+model_id: m-3d6f0b8d3f184ababbca2fb4d6c8a8d8
+model_type: null
+name: model_decision_tree
+source_run_id: 2589f7a27b114d25b5412c09f00855f2
+status: 2
+status_message: null

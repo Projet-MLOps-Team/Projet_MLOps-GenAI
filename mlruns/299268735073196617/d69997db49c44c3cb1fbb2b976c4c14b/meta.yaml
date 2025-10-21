@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/d69997db49c44c3cb1fbb2b976c4c14b/artifacts
+end_time: 1761037912137
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: d69997db49c44c3cb1fbb2b976c4c14b
+run_name: adorable-ray-474
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761037313366
+status: 3
+tags: []
+user_id: LENOVO

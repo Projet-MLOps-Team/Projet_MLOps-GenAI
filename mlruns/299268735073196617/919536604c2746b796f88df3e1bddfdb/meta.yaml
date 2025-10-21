@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/919536604c2746b796f88df3e1bddfdb/artifacts
+end_time: 1761023952006
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 919536604c2746b796f88df3e1bddfdb
+run_name: entertaining-bug-965
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761023935962
+status: 3
+tags: []
+user_id: LENOVO

@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/4e1e44a161e346bfb09a6c8ec9087665/artifacts
+end_time: 1761031638183
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 4e1e44a161e346bfb09a6c8ec9087665
+run_name: efficient-smelt-887
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761031619324
+status: 3
+tags: []
+user_id: LENOVO

@@ -1,0 +1,6 @@
+destination_id: m-ac150cc79acd461aa76ebbcafe80b15e
+destination_type: MODEL_OUTPUT
+source_id: m-ac150cc79acd461aa76ebbcafe80b15e
+source_type: RUN_OUTPUT
+step: 0
+tags: {}

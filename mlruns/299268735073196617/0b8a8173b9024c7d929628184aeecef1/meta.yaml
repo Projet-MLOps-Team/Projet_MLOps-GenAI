@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/LENOVO/Desktop/Projet_MLOps/mlruns/299268735073196617/0b8a8173b9024c7d929628184aeecef1/artifacts
+end_time: 1761023481753
+entry_point_name: ''
+experiment_id: '299268735073196617'
+lifecycle_stage: active
+run_id: 0b8a8173b9024c7d929628184aeecef1
+run_name: merciful-squid-133
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761023457141
+status: 3
+tags: []
+user_id: LENOVO
