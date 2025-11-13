@@ -21,6 +21,9 @@ on:
     - main
     - wai
 
+# execute manuellement
+  workflow_dispatch:
+
 # this pipeline consists of a two jobs named ci_pipeline
 
 jobs:
