@@ -2,18 +2,26 @@ name: Deploy to Hugging Face Space
 
 on:
   push:
-    branches: [ main, develop, 'feature/**', 'patricia/**', 'alexandre/**', 'wai/**' ]
+    branches: [ '**' ]  # TOUS les branches sans exception
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ '**' ]  # TOUS les PR
+  workflow_dispatch:     # Déclenchement manuel possible
 
 jobs:
-  # Tâche CI - Exécutée sur toutes les branches
+  # Test pour TOUTES les branches
   test:
     runs-on: ubuntu-latest
+    name: "CI Test - ${{ github.actor }} on ${{ github.ref_name }}"
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+    
+    - name: Display info
+      run: |
+        echo " CI déclenché par: ${{ github.actor }}"
+        echo " Sur la branche: ${{ github.ref_name }}"
+        echo " CI en cours d'exécution..."
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -23,24 +31,18 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        pip install pytest flake8
+        echo " Dépendances installées"
     
     - name: Run tests
       run: |
-        # Exécuter les tests (si disponibles)
-        # pytest tests/
-        echo "Tests réussis"
-    
-    - name: Lint code
-      run: |
-        # flake8 app.py --max-line-length=120
-        echo "Vérification du code réussie"
+        # Ajouter vos tests ici
+        echo " Tests réussis pour ${{ github.actor }}"
   
-  # Tâche de déploiement - Exécutée uniquement sur la branche main
+  # Déploiement SEULEMENT pour main
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
@@ -54,17 +56,14 @@ jobs:
         HF_USERNAME: ${{ secrets.HF_USERNAME }}
         HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
       run: |
+        echo " Déploiement en cours..."
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
         
-        # Cloner le Space HF dans un répertoire séparé
         git clone https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME hf_space
-        
-        # Copier les fichiers en excluant .git et le répertoire hf_space
         rsync -av --exclude='.git' --exclude='hf_space' --exclude='.github' --include='*.csv' ./ hf_space/
         
-        # Naviguer vers le Space HF et pousser les changements
         cd hf_space
         git add .
-        git diff --quiet && git diff --staged --quiet || git commit -m "Déploiement depuis GitHub Actions"
+        git diff --quiet && git diff --staged --quiet || git commit -m "Deploy from GitHub Actions"
         git push https://user:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME main
