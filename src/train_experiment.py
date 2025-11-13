@@ -1,4 +1,5 @@
 # src/train_experiment.py
+import os
 import mlflow
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,26 +18,19 @@ from src.data_artefacts import log_data_sample_artifact, log_eda_report_artifact
 from src.save_best_model import save_model
 
 # Définir l'emplacement où MLflow stocke les données
-# 'file:./mlruns' indique à MLflow d'utiliser le répertoire local 'mlruns'
+
+mlflow.set_tracking_uri("file://" + os.path.expanduser('~/mlruns'))
 #mlflow.set_tracking_uri("file:./mlruns")
-mlflow.set_tracking_uri("http://localhost:5000")
-
-# Alternativement, utilisez la variable d'environnement (si 'set_tracking_uri' posait un problème d'accès):
-# os.environ["MLFLOW_TRACKING_URI"] = "file:./mlruns"
-
+#mlflow.set_tracking_uri("http://localhost:5000")
 
 def run_full_experiment():
     
     # --- 1. Préparation de l'environnement et des données ---
 
-    #Créer ce dossier dans votre workspace 
-    #artifacts_dir = Path("./mlflow_artifacts")
-
-    EXPERIMENT_NAME = "Credit_Default_Prediction_Project"
+    EXPERIMENT_NAME = "Credit_Default_Prediction_Project_2"
     EXPERIMENT_DESCRIPTION = "Comparaison de LR, RF, et DT avec hyperparamètres variés."
     
     try:
-        # Tente de créer l'expérience avec description, sinon la sélectionne
         mlflow.create_experiment(
             name=EXPERIMENT_NAME,
             tags={"mlflow.note.content": EXPERIMENT_DESCRIPTION},
@@ -44,7 +38,6 @@ def run_full_experiment():
         )
     except Exception:
         pass # L'expérience existe déjà
-
             
     mlflow.set_experiment(EXPERIMENT_NAME)
     
@@ -52,6 +45,7 @@ def run_full_experiment():
     X, y = load_data()
     X_train, X_val, X_test, y_train, y_val, y_test = split_data(X, y)
     
+    # Récupération de la configuration des modèles
     models_config = get_models_config()
 
     # SCORE POUR LE MEILLEUR MODELE
@@ -62,19 +56,19 @@ def run_full_experiment():
 
     print(f"Démarrage de l'Expérience MLflow: {EXPERIMENT_NAME}")
     
-    # --- 2. Boucle d'Expérimentation ---
+    # --- 2. Boucle d'Expérimentation (RUN) ---
 
     N_SPLITS = 5
     stratified_cv = StratifiedKFold(
     n_splits=N_SPLITS, 
     shuffle=True, 
-    random_state=42 # Assure la reproductibilité de la division
+    random_state=42
         )
 
     for model_name, config in models_config.items():
         data_artifacts_logged = False
         print(f"\n--- Entraînement et Tuning pour {model_name} ---")
-        
+         
         # Utilisation de GridSearchCV pour trouver la meilleure combinaison
         grid_search = GridSearchCV(
             estimator=config["model"],
@@ -86,7 +80,6 @@ def run_full_experiment():
         )
         # Entraîne sur (Train + Validation) pour trouver les meilleurs paramètres
         grid_search.fit(pd.concat([X_train, X_val]), pd.concat([y_train, y_val]))
-
 
         # Log des meilleurs résultats
         with mlflow.start_run(run_name=f"Best_{model_name}_Run") as run:
@@ -114,7 +107,7 @@ def run_full_experiment():
             # ENREGISTREMENT DU MODELE
             logged_model = mlflow.sklearn.log_model(
                 sk_model=best_model,
-                artifact_path="model",
+                artifact_path=f"{model_name}_model",
                 registered_model_name=f"{model_name}_Credit_Default"
             )
 
@@ -138,7 +131,7 @@ def run_full_experiment():
         test_metrics = evaluate_model(loaded_model, X_test, y_test)
         
         print("\nMétriques finales sur l'ensemble de TEST:")
-        for name, value in test_metrics.items():
+        for name, value in test_metrics.items():#
             print(f"  {name.upper()}: {value:.4f}")
         
         # Enregistrer les métriques finales dans le meilleur run
@@ -151,5 +144,5 @@ def run_full_experiment():
     save_model(best_model_name)
 
     # Sauvegarder en Local le modèle en .pkl
-    joblib.dump(loaded_model, "best_model_local.pkl")
-    print("✅ Modèle sauvegardé localement : best_model_local.pkl")
+    joblib.dump(loaded_model, "best_model_local_2.pkl")
+    print("✅ Modèle sauvegardé localement : best_model_local_2.pkl")

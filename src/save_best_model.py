@@ -22,12 +22,12 @@ def save_model(best_model_name):
             # ✅ (Optionnel) Chargement du modèle via alias
             model_uri = f"models:/{model_name_for_registry}@champion"
             model = mlflow.pyfunc.load_model(model_uri)
-            print("✅ Modèle chargé via alias 'champion'.")
+            print("Modèle chargé via alias 'champion'.")
 
         else:
-            print(f"⚠️ Aucune version trouvée pour le modèle '{model_name_for_registry}'. Impossible de le marquer comme 'Production'.")
+            print(f"Aucune version trouvée pour le modèle '{model_name_for_registry}'. Impossible de le marquer comme 'Production'.")
         
     except mlflow.exceptions.MlflowException as e:
-        print(f"❌ Erreur MLflow : {e}")
+        print(f"Erreur MLflow : {e}")
     except Exception as e:
-        print(f"❌ Erreur inattendue : {e}")
+        print(f"Erreur inattendue : {e}")

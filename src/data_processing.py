@@ -8,7 +8,7 @@ def load_data():
 
     # Charger et préparer les données
     df = pd.read_csv(data_path)
-    X = df.drop(target_col, axis=1)
+    X = df.drop([target_col, 'customer_id'], axis=1)
     y = df[target_col]
 
     return X, y

@@ -1,0 +1,22 @@
+artifact_path: file:///E:/Formation_Data_Analystic/projet_MLOps_GAI/Projet_MLOps/mlruns/484893266441684594/models/m-231ca7e4bff84c9082bd1ef3d32797f9/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.9
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.2
+mlflow_version: 3.4.0
+model_id: m-231ca7e4bff84c9082bd1ef3d32797f9
+model_size_bytes: 1012
+model_uuid: m-231ca7e4bff84c9082bd1ef3d32797f9
+prompts: null
+run_id: 01879580fb30400b99c4781d116dd4e3
+utc_time_created: '2025-10-16 21:26:15.967774'
