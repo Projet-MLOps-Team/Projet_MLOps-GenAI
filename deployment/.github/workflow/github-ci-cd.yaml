@@ -1,0 +1,87 @@
+name: Github-Docker Project Credit Default Alexandre - Jiwon - Patricia - Waï
+
+# Les variables d'environnement
+env:
+  DOCKER_USER: ${{secrets.DOCKER_USER}}
+  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+  REPO_NAME: ${{secrets.REPO_NAME}}
+
+# Event Triggers:
+# The pipeline is triggered whenever there is a push to the main branch.
+# It is also triggered whenever there is a pull request to the main branch
+# Le declenchement se fera lorsqu'il y 
+# aura une action "push" ou "pull_request" depuis la branche main
+on:
+  push:
+    branches:
+    - main
+    - wai
+  pull_request:
+    branches:
+    - main
+
+# this pipeline consists of a two jobs named ci_pipeline
+
+jobs:
+
+
+  ci_pipeline: 
+       runs-on: ubuntu-latest     # The job runs on the ubuntu-latest operating system
+       
+       steps:
+        - uses: actions/checkout@v1 
+          with:
+            fetch-depth: 0
+#The first step uses the actions/checkout@v1 action to clone the repository.
+#The fetch-depth: 0 parameter ensures that the complete commit history is fetched.
+
+        - name: Set up Python 3.9
+          uses: actions/setup-python@v1
+          with:
+            python-version: 3.9
+#The second step sets up Python 3.9 by using the actions/setup-python@v1 action.
+#The python-version: 3.9 parameter specifies the desired Python version.
+
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+# The third step installs the project dependencies.
+
+        - name: Format
+          run: |
+            black app.py
+# The fourth step formats the app.py file using the black code formatter.
+
+        - name: Lint
+          run: |
+            pylint --disable=R,C  app.py
+#The fifth step performs linting on the app.py file using pylint.
+#The --disable=R,C flag disables specific pylint checks.
+
+        - name: Test
+          run: |
+            python -m pytest -vv test.py
+
+
+  cd_pipeline:
+
+      runs-on: ubuntu-latest 
+      needs: [ci_pipeline]
+ 
+      steps:
+
+      - uses: actions/checkout@v2 
+      - name: docker login
+        run: | # log into docker hub account
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+  
+      - name: Get current date # get the date of the build
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d--%M-%S')"
+
+      - name: Build the Docker image # push The image to the docker hub
+        run: docker build . --file Dockerfile --tag $DOCKER_USER/$REPO_NAME:${{ steps.date.outputs.date }}
+
+      - name: Docker Push
+        run: docker push $DOCKER_USER/$REPO_NAME:${{ steps.date.outputs.date }}
