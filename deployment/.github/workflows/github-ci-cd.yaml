@@ -13,12 +13,6 @@ env:
 # aura une action "push" ou "pull_request" depuis la branche main
 on:
   push:
-    branches:
-    - main
-    - wai
-  pull_request:
-    branches:
-    - main
     - wai
   workflow_dispatch:
 
