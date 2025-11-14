@@ -39,7 +39,7 @@ data.csv              # Données brutes
 eda.py                # EDA + nettoyage -> datafinal.csv
 datafinal.csv         # Données prêtes pour l’entraînement
 train.py              # Entraînement + export best_model.joblib (+ meta.json)
-langchainagent.py     # Agent LangChain (RAG, MLPredict, Calculator, WebSearch)
+agent.py     # Agent LangChain (RAG, MLPredict, Calculator, WebSearch)
 app.py                # UI Streamlit (chat)
 ragdoc.pdf            # Document interne indexé pour le RAG
 requirements.txt      # Dépendances
