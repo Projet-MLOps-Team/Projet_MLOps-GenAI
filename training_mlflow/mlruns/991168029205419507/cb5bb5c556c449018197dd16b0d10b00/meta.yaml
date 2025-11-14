@@ -1,0 +1,14 @@
+artifact_uri: file:///E:/Formation_Data_Analystic/projet_MLOps_GAI/Projet_MLOps/mlruns/cb5bb5c556c449018197dd16b0d10b00/artifacts
+end_time: 1761061456251
+entry_point_name: ''
+experiment_id: '991168029205419507'
+lifecycle_stage: active
+run_id: cb5bb5c556c449018197dd16b0d10b00
+run_name: Best_LogisticRegression_Run
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761061383461
+status: 3
+tags: []
+user_id: wai_l

@@ -1,0 +1,14 @@
+artifact_uri: file:///E:/Formation_Data_Analystic/projet_MLOps_GAI/Projet_MLOps/mlruns/484893266441684594/a01a37b50c4f41ab80bc5f72b5e83d27/artifacts
+end_time: 1760550482114
+entry_point_name: ''
+experiment_id: '484893266441684594'
+lifecycle_stage: active
+run_id: a01a37b50c4f41ab80bc5f72b5e83d27
+run_name: Best_DecisionTreeClassifier_Run
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1760550475509
+status: 3
+tags: []
+user_id: wai_l

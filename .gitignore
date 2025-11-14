@@ -1,3 +1,7 @@
+ma_env
+src/__pycache__/
+requirements.txt
+.env
 # Virtual Environments
 venv/
 .venv/

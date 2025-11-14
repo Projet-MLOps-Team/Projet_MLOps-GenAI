@@ -1,0 +1,10 @@
+artifact_location: file:///E:/Formation_Data_Analystic/projet_MLOps_GAI/Projet_MLOps/mlruns/models/m-bd635f3be98a4c309248e289b32daa99/artifacts
+creation_timestamp: 1761063986286
+experiment_id: '991168029205419507'
+last_updated_timestamp: 1761063993055
+model_id: m-bd635f3be98a4c309248e289b32daa99
+model_type: null
+name: DecisionTreeClassifier_model
+source_run_id: 4fe522f571b74b36904e473669816c57
+status: 2
+status_message: null

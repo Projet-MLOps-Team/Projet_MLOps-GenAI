@@ -1,0 +1,75 @@
+name: Github-Docker Project Credit Default Alexandre - Jiwon - Patricia - Waï
+
+# Les variables d'environnement à créer
+env:
+  DOCKER_USER: ${{secrets.DOCKER_USER}}
+  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+  REPO_NAME: ${{secrets.REPO_NAME}}
+
+# Event Triggers:
+# The pipeline is triggered whenever there is a push to the main branch.
+# It is also triggered whenever there is a pull request to the main branch
+# Le declenchement se fera lorsqu'il y 
+# aura une action "push" ou "pull_request" depuis la branche main
+on:
+  push:
+    - wai
+  workflow_dispatch:
+
+# this pipeline consists of a two jobs named ci_pipeline
+
+jobs:
+
+
+  ci_pipeline: 
+       runs-on: ubuntu-latest     # The job runs on the ubuntu-latest operating system
+       
+       steps:
+        - uses: actions/checkout@v3 
+        - name: Set up Python 3.9
+          uses: actions/setup-python@v1
+          with:
+            python-version: 3.9
+
+
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+        - name: Format (Black)
+          run: |
+            black --check app.py
+
+
+        - name: Lint (Pylint)
+          run: |
+            pylint --disable=R,C  app.py
+
+
+        - name: Test (Pytest)
+          run: |
+            python -m pytest -vv test.py
+
+
+  cd_pipeline:
+
+      needs: [ci_pipeline]
+      runs-on: ubuntu-latest 
+    
+      steps:
+
+      - uses: actions/checkout@v3
+      - name: docker login
+        run: | # log into docker hub account
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+  
+      - name: Get current date # get the date of the build
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d--%M-%S')"
+
+      - name: Build the Docker image # push The image to the docker hub
+        run: docker build . --file Dockerfile --tag $DOCKER_USER/$REPO_NAME:${{ steps.date.outputs.date }}
+
+      - name: Docker Push
+        run: docker push $DOCKER_USER/$REPO_NAME:${{ steps.date.outputs.date }}
