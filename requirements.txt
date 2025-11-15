@@ -1,0 +1,14 @@
+langchain
+langgraph
+langchain-openai
+langchain-community
+langchain-chroma
+langchain-text-splitters
+chromadb
+tavily-python
+numexpr
+pypdf
+requests
+python-dotenv
+mlflow
+pandas
