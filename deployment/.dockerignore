@@ -2,4 +2,3 @@ README.md
 .git*
 /ma_env
 .env
-/training_mlflow
