@@ -19,7 +19,7 @@ __pycache__/
 # Sorties / artefacts
 # =========================
 artifacts/
-*.pkl
+#*.pkl
 *.joblib
 *.h5
 *.log
