@@ -1,0 +1,46 @@
+# =========================
+# Python venv & caches
+# =========================
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# =========================
+# Données (datasets)
+# =========================
+data/
+# Si tu veux garder un petit échantillon de démo, tu peux faire :
+# data/*
+# !data/sample_*.csv
+
+# =========================
+# Sorties / artefacts
+# =========================
+artifacts/
+*.pkl
+*.joblib
+*.h5
+*.log
+
+# =========================
+# MLflow
+# =========================
+mlruns/
+mlflow/
+mlflow.db
+*.db
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# OS / IDE
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
