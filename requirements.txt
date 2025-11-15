@@ -12,3 +12,8 @@ requests
 python-dotenv
 mlflow
 pandas
+streamlit==1.*
+pandas
+boto3
+s3fs
+altair
