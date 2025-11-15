@@ -10,7 +10,7 @@ __pycache__/
 # =========================
 # Données (datasets)
 # =========================
-data/
+#data/
 # Si tu veux garder un petit échantillon de démo, tu peux faire :
 # data/*
 # !data/sample_*.csv
