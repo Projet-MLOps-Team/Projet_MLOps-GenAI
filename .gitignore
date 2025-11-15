@@ -2,3 +2,59 @@ ma_env
 src/__pycache__/
 requirements.txt
 .env
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+*.venv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+
+# Streamlit
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# MLflow
+mlruns/
+
+# Data (si trop volumineux)
+# data/raw/*.csv
+# Mais garder data/processed/ pour reproduction
+
+# IMPORTANT: Ne pas ignorer les modèles nécessaires au déploiement!
+# artifacts/ est commenté pour permettre le déploiement
+# artifacts/
+
+# Git LFS (si utilisé pour gros fichiers)
+# *.joblib filter=lfs diff=lfs merge=lfs -text

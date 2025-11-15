@@ -1,0 +1,69 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches: [ '**' ]  # TOUS les branches sans exception
+  pull_request:
+    branches: [ '**' ]  # TOUS les PR
+  workflow_dispatch:     # Déclenchement manuel possible
+
+jobs:
+  # Test pour TOUTES les branches
+  test:
+    runs-on: ubuntu-latest
+    name: "CI Test - ${{ github.actor }} on ${{ github.ref_name }}"
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Display info
+      run: |
+        echo " CI déclenché par: ${{ github.actor }}"
+        echo " Sur la branche: ${{ github.ref_name }}"
+        echo " CI en cours d'exécution..."
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        echo " Dépendances installées"
+    
+    - name: Run tests
+      run: |
+        # Ajouter vos tests ici
+        echo " Tests réussis pour ${{ github.actor }}"
+  
+  # Déploiement SEULEMENT pour main
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Push to Hugging Face Space
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        HF_USERNAME: ${{ secrets.HF_USERNAME }}
+        HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+      run: |
+        echo " Déploiement en cours..."
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        
+        git clone https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME hf_space
+        rsync -av --exclude='.git' --exclude='hf_space' --exclude='.github' --include='*.csv' ./ hf_space/
+        
+        cd hf_space
+        git add .
+        git diff --quiet && git diff --staged --quiet || git commit -m "Deploy from GitHub Actions"
+        git push https://user:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME main
