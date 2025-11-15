@@ -1,4 +1,5 @@
 # src/train_experiment.py
+# mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlartifacts --host 0.0.0.0 --port 5000
 import os
 import mlflow
 import pandas as pd
@@ -9,43 +10,62 @@ import joblib
 
 
 # Importation des modules locaux
-from src.data_processing import load_data, split_data
-from src.models import get_models_config
-from src.metrics import (evaluate_model, log_metrics, log_roc_curve_artifact,
+from data_processing import load_data, split_data
+from models import get_models_config
+from metrics import (evaluate_model, log_metrics, log_roc_curve_artifact,
                          log_confusion_matrix_artifact, log_precision_recall_curve_artifact, log_feature_importance_artifact)
 
-from src.data_artefacts import log_data_sample_artifact, log_eda_report_artifact
-from src.save_best_model import save_model
+from data_artefacts import log_data_sample_artifact, log_eda_report_artifact
+from save_best_model import save_model
+from mlflow.tracking import MlflowClient
 
 # Définir l'emplacement où MLflow stocke les données
 
-mlflow.set_tracking_uri("file://" + os.path.expanduser('~/mlruns'))
-#mlflow.set_tracking_uri("file:./mlruns")
-#mlflow.set_tracking_uri("http://localhost:5000")
-
 def run_full_experiment():
-    
+
+        
+    mlflow.set_tracking_uri("http://localhost:5000")
+    client = MlflowClient()
+
     # --- 1. Préparation de l'environnement et des données ---
 
-    EXPERIMENT_NAME = "Credit_Default_Prediction_Project_2"
+    EXPERIMENT_NAME = "Credit_Default_Prediction_Project"
     EXPERIMENT_DESCRIPTION = "Comparaison de LR, RF, et DT avec hyperparamètres variés."
     
+
+    # # Liste les expériences existantes
     try:
-        mlflow.create_experiment(
+        experiments = client.search_experiments()
+        print(f"\n {len(experiments)} expérience(s) trouvée(s):")
+        for exp in experiments:
+            print(f"  - Nom: {exp.name}, ID: {exp.experiment_id}")
+    except Exception as e:
+        print(f" Erreur lors de la recherche, not found: {e}")
+
+    # Essaie de créer une nouvelle expérience
+    try:
+        exp_id = mlflow.create_experiment(
             name=EXPERIMENT_NAME,
-            tags={"mlflow.note.content": EXPERIMENT_DESCRIPTION},
-            artifact_location=Path.cwd().joinpath("mlruns").as_uri()
+            tags={"mlflow.note.content": EXPERIMENT_DESCRIPTION}
         )
-    except Exception:
-        pass # L'expérience existe déjà
+        print(f"Expérience créée: {EXPERIMENT_NAME} (ID: {exp_id})")
+    except mlflow.exceptions.MlflowException as e:
+        if "already exists" in str(e):
+            exp = mlflow.get_experiment_by_name(EXPERIMENT_NAME)
+            print(f"⚠️ Expérience existante: {EXPERIMENT_NAME} (ID: {exp.experiment_id})")
+        else:
+           raise e
             
     mlflow.set_experiment(EXPERIMENT_NAME)
+    current_exp = mlflow.get_experiment_by_name(EXPERIMENT_NAME)
+    print(f"📊 Expérience active: {current_exp.name} (ID: {current_exp.experiment_id})")
     
-    # Chargement et division des données
+    # CHARGEMENT DES DONNEES
+    print("\n📂 Chargement des données...")
     X, y = load_data()
     X_train, X_val, X_test, y_train, y_val, y_test = split_data(X, y)
     
-    # Récupération de la configuration des modèles
+    # CONFIGURATION DES MODELES
     models_config = get_models_config()
 
     # SCORE POUR LE MEILLEUR MODELE
@@ -60,10 +80,10 @@ def run_full_experiment():
 
     N_SPLITS = 5
     stratified_cv = StratifiedKFold(
-    n_splits=N_SPLITS, 
-    shuffle=True, 
-    random_state=42
-        )
+        n_splits=N_SPLITS, 
+        shuffle=True, 
+        random_state=42
+    )
 
     for model_name, config in models_config.items():
         data_artifacts_logged = False
@@ -87,11 +107,11 @@ def run_full_experiment():
 
             mlflow.log_params(grid_search.best_params_)
             
-            # LOGS DES METRIQUES NUMERIQUES
+            # LOGS DES METRIQUES NUMERIQUES DE VALIDATION
             val_metrics = evaluate_model(best_model, X_val, y_val)
             log_metrics(val_metrics, prefix="val")
 
-            # LOGS ARTEFACTS DES DONNEES
+            # LOGS ARTEFACTS DES DONNEES DE VALIDATION
             if not data_artifacts_logged:
                 print("Enregistrement des artefacts liés aux données (échantillon, rapport EDA)...")
                 log_data_sample_artifact(X_train, y_train)
@@ -144,5 +164,5 @@ def run_full_experiment():
     save_model(best_model_name)
 
     # Sauvegarder en Local le modèle en .pkl
-    joblib.dump(loaded_model, "best_model_local_2.pkl")
-    print("✅ Modèle sauvegardé localement : best_model_local_2.pkl")
+    joblib.dump(loaded_model, "best_model.pkl")
+    print("✅ Modèle sauvegardé localement : best_model.pkl")
