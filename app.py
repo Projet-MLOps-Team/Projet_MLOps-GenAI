@@ -7,7 +7,7 @@ from agent import build_agent, chat, ml_predict  # ton fichier agent.py
 
 # ========== CONFIG STREAMLIT ==========
 st.set_page_config(
-    page_title="GENAI – Banking Super App",
+    page_title="GENAI – Banking Super AI App",
     page_icon="🤖",
     layout="wide"
 )
