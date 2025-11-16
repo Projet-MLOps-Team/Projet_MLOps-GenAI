@@ -7,7 +7,7 @@ from agent import build_agent, chat, ml_predict  # ton fichier agent.py
 
 # ========== CONFIG STREAMLIT ==========
 st.set_page_config(
-    page_title="GENAI – Banking SuperAIApp",
+    page_title="GENAI – Banking Lab 3",
     page_icon="🤖",
     layout="wide"
 )
@@ -25,7 +25,7 @@ if "uploaded_df" not in st.session_state:
 agent = st.session_state.agent
 
 # ========= PAGE HEADER GLOBAL =========
-st.title("GENAI – Banking SuperAIApp")
+st.title("GENAI – Banking Lab 3")
 
 # ========= NAVIGATION PAR ONGLET EN HAUT =========
 tab_eda, tab_ml, tab_chat = st.tabs(["📊 EDA", "🔮 Prédiction ML", "💬 Chatbot"])
@@ -54,81 +54,70 @@ with tab_eda:
     else:
         st.success(f"Dataset chargé : **{df.shape[0]} lignes**, **{df.shape[1]} colonnes**")
 
+        # ================= APERCU =================
         st.markdown("### 👀 Aperçu du dataset")
         st.dataframe(df.head(), use_container_width=True)
 
+        # ================= INDICATEURS GLOBAUX =================
         default_rate = df["default"].mean() * 100
         colA, colB, colC = st.columns(3)
         colA.metric("Taux de défaut global", f"{default_rate:.1f} %")
-        colB.metric("Clients sains", f"{(df['default']==0).sum()}")
-        colC.metric("Clients en défaut", f"{(df['default']==1).sum()}")
+        colB.metric("Clients sains", f"{(df['default'] == 0).sum()}")
+        colC.metric("Clients en défaut", f"{(df['default'] == 1).sum()}")
 
         st.markdown("---")
 
-    # ================= APERCU =================
-    st.markdown("### 👀 Aperçu du dataset")
-    st.dataframe(df.head(), use_container_width=True)
+        # ================= DISTRIBUTIONS PAR DEFAUT =================
+        st.markdown("## 📈 Variables clés vs défaut")
 
-    # ================= INDICATEURS GLOBAUX =================
-    default_rate = df["default"].mean() * 100
-    colA, colB, colC = st.columns(3)
-    colA.metric("Taux de défaut global", f"{default_rate:.1f} %")
-    colB.metric("Clients sains", f"{(df['default']==0).sum()}")
-    colC.metric("Clients en défaut", f"{(df['default']==1).sum()}")
+        numeric_cols = [
+            "fico_score", "debt_ratio", "income", "years_employed",
+            "loan_amt_outstanding", "total_debt_outstanding"
+        ]
 
-    st.markdown("---")
+        var = st.selectbox("Choisis une variable à explorer :", numeric_cols)
 
-    # ================= DISTRIBUTIONS PAR DEFAUT =================
-    st.markdown("## 📈 Variables clés vs défaut")
+        import altair as alt
+        chart = alt.Chart(df).mark_bar(opacity=0.7).encode(
+            x=alt.X(var, bin=alt.Bin(maxbins=30)),
+            y="count()",
+            color=alt.Color("default:N", legend=alt.Legend(title="Default (0=OK, 1=Défaut)"))
+        ).properties(width=650, height=350)
 
-    numeric_cols = [
-        "fico_score", "debt_ratio", "income", "years_employed",
-        "loan_amt_outstanding", "total_debt_outstanding"
-    ]
+        st.altair_chart(chart)
 
-    var = st.selectbox("Choisis une variable à explorer :", numeric_cols)
+        st.markdown("---")
 
-    import altair as alt
-    chart = alt.Chart(df).mark_bar(opacity=0.7).encode(
-        x=alt.X(var, bin=alt.Bin(maxbins=30)),
-        y="count()",
-        color=alt.Color("default:N", legend=alt.Legend(title="Default (0=OK, 1=Défaut)"))
-    ).properties(width=650, height=350)
+        # ================= CORRÉLATION =================
+        st.markdown("## 🔗 Matrice de corrélation")
 
-    st.altair_chart(chart)
+        corr = df.corr(numeric_only=True)
+        st.dataframe(corr.style.background_gradient(cmap="Reds"), use_container_width=True)
 
-    st.markdown("---")
+        # Top variables explicatives
+        st.markdown("### 🥇 Variables les plus corrélées avec le défaut")
 
-    # ================= CORRÉLATION =================
-    st.markdown("## 🔗 Matrice de corrélation")
+        corr_default = corr["default"].drop("default").sort_values(ascending=False)
+        st.bar_chart(corr_default)
 
-    corr = df.corr(numeric_only=True)
-    st.dataframe(corr.style.background_gradient(cmap="Reds"), use_container_width=True)
+        st.markdown("---")
 
-    # Top variables explicatives
-    st.markdown("### 🥇 Variables les plus corrélées avec le défaut")
+        # ================= SCATTERPLOT =================
+        st.markdown("## 🧭 Scatterplot – localiser les zones à risque")
 
-    corr_default = corr["default"].drop("default").sort_values(ascending=False)
-    st.bar_chart(corr_default)
+        x_var = st.selectbox("Axe X", numeric_cols, index=2)
+        y_var = st.selectbox("Axe Y", numeric_cols, index=0)
 
-    st.markdown("---")
+        scatter = alt.Chart(df).mark_circle(size=60, opacity=0.6).encode(
+            x=x_var,
+            y=y_var,
+            color=alt.Color("default:N", legend=alt.Legend(title="Défaut")),
+            tooltip=["income", "fico_score", "debt_ratio", "default"]
+        ).properties(width=750, height=450)
 
-    # ================= SCATTERPLOT =================
-    st.markdown("## 🧭 Scatterplot – localiser les zones à risque")
+        st.altair_chart(scatter)
 
-    x_var = st.selectbox("Axe X", numeric_cols, index=2)
-    y_var = st.selectbox("Axe Y", numeric_cols, index=0)
-
-    scatter = alt.Chart(df).mark_circle(size=60, opacity=0.6).encode(
-        x=x_var,
-        y=y_var,
-        color=alt.Color("default:N", legend=alt.Legend(title="Défaut")),
-        tooltip=["income", "fico_score", "debt_ratio", "default"]
-    ).properties(width=750, height=450)
-
-    st.altair_chart(scatter)
-
-    st.success("Analyse EDA terminée ✔️")
+        st.success("Analyse EDA terminée ✔️")
 
 
 # ==================== PAGE 2 : FORMULAIRE PRÉDICTION ML ====================
