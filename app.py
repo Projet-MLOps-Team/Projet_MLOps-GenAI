@@ -34,7 +34,7 @@ if not st.session_state.balloons_done:
 agent = st.session_state.agent
 
 # ========= PAGE HEADER GLOBAL =========
-st.title("GENAI – Banking Lab 3")
+st.title("GENAI – AI Banking Lab 3")
 
 # ========= NAVIGATION PAR ONGLET EN HAUT =========
 tab_eda, tab_ml, tab_chat = st.tabs(["📊 EDA", "🔮 Prédiction ML", "💬 Chatbot"])
