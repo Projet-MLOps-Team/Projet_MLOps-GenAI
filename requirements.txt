@@ -1,9 +1,0 @@
-streamlit
-pandas
-numpy
-scikit-learn
-plotly
-joblib
-python-dotenv
-google-generativeai==0.8.2
-requests
