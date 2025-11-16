@@ -1,0 +1,13 @@
+--- Rapport EDA Simplifié ---
+Nombre total de lignes: 10000
+Nombre de colonnes: 8
+
+Statistiques Clés (Moyenne):
+customer_id                 4.974577e+06
+credit_lines_outstanding    1.461200e+00
+loan_amt_outstanding        4.159677e+03
+total_debt_outstanding      8.718917e+03
+income                      7.003990e+04
+years_employed              4.552800e+00
+fico_score                  6.375577e+02
+debt_ratio                  1.240180e-01

@@ -1,0 +1,10 @@
+artifact_location: file:///E:/Formation_Data_Analystic/projet_MLOps_GAI/Projet_MLOps/mlruns/484893266441684594/models/m-4d4bcfeb926e4c8891fd511904ea1b2b/artifacts
+creation_timestamp: 1760629133026
+experiment_id: '484893266441684594'
+last_updated_timestamp: 1760629138643
+model_id: m-4d4bcfeb926e4c8891fd511904ea1b2b
+model_type: null
+name: model
+source_run_id: 53cd443cc7644641890e79df522b7869
+status: 2
+status_message: null

@@ -1,0 +1,14 @@
+artifact_uri: file:///E:/Formation_Data_Analystic/projet_MLOps_GAI/Projet_MLOps/mlruns/484893266441684594/7b2ecc711d4b4efb8c6437d210fa8c63/artifacts
+end_time: 1760642472663
+entry_point_name: ''
+experiment_id: '484893266441684594'
+lifecycle_stage: active
+run_id: 7b2ecc711d4b4efb8c6437d210fa8c63
+run_name: Best_RandomForestClassifier_Run
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1760642459009
+status: 3
+tags: []
+user_id: wai_l

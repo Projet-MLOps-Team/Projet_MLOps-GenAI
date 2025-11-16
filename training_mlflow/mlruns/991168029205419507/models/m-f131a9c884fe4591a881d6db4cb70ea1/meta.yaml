@@ -1,0 +1,10 @@
+artifact_location: file:///E:/Formation_Data_Analystic/projet_MLOps_GAI/Projet_MLOps/mlruns/models/m-f131a9c884fe4591a881d6db4cb70ea1/artifacts
+creation_timestamp: 1761063976793
+experiment_id: '991168029205419507'
+last_updated_timestamp: 1761063982880
+model_id: m-f131a9c884fe4591a881d6db4cb70ea1
+model_type: null
+name: RandomForestClassifier_model
+source_run_id: 8d9f9966565a4a1189fbeaedba402ef4
+status: 2
+status_message: null
