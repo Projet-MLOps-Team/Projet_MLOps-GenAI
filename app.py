@@ -25,7 +25,7 @@ if "uploaded_df" not in st.session_state:
 agent = st.session_state.agent
 
 # ========= PAGE HEADER GLOBAL =========
-st.title("GENAI – Banking Lab")
+st.title("GENAI – Banking Super AI App")
 
 # ========= NAVIGATION PAR ONGLET EN HAUT =========
 tab_eda, tab_ml, tab_chat = st.tabs(["📊 EDA", "🔮 Prédiction ML", "💬 Chatbot"])
