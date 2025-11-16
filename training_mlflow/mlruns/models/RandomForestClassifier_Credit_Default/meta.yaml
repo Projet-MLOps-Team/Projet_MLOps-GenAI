@@ -1,8 +1,0 @@
-aliases:
-  champion: '16'
-creation_timestamp: 1760550475047
-deployment_job_id: null
-deployment_job_state: null
-description: null
-last_updated_timestamp: 1761063983252
-name: RandomForestClassifier_Credit_Default
