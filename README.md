@@ -31,7 +31,7 @@ Dockerfile                              # Image Streamlit + agent
 Loan_Data.csv                           # Données brutes de crédit
 eda.py                                  # Script d’EDA et préparation de datasetfinal.csv
 datasetfinal.csv                        # Données nettoyées / feature engineering
-train.py                                # Entrainement & MLFLOW
+train.ipynb                             # Entrainement & MLFLOW
 agent.py                                # Agent Sorbonnio (RAG, ML, Calc, Web)
 app.py                                  # App Streamlit (EDA, Prédiction ML, Chatbot)
 conditions-tarifaires-particuliers-2025.pdf  # Document RAG
