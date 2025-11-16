@@ -1,4 +1,4 @@
-name: CI-CD AWS App Runner - Projet MLOps GenAI
+name: CI-CD AWS ECS - Projet MLOps GenAI
 
 on:
   push:
@@ -17,7 +17,6 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-      APP_RUNNER_SERVICE_ARN: ${{ secrets.APP_RUNNER_SERVICE_ARN }}
 
     steps:
       - name: Checkout repository
@@ -34,13 +33,12 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, tag, and push image to ECR
-        id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
         run: |
-          IMAGE_TAG=${GITHUB_SHA::7}
-          IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          # on pousse toujours sur :latest pour que la task ECS repulle cette image
+          IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:latest
 
           echo "Building image $IMAGE_URI"
           docker build -t $IMAGE_URI .
@@ -48,16 +46,13 @@ jobs:
           echo "Pushing image to ECR..."
           docker push $IMAGE_URI
 
-          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
-
-      - name: Deploy to AWS App Runner
+      - name: Deploy to Amazon ECS (Fargate)
         env:
-          APP_RUNNER_SERVICE_ARN: ${{ env.APP_RUNNER_SERVICE_ARN }}
-          IMAGE_URI: ${{ steps.build-image.outputs.image }}
+          ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+          ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
         run: |
-          echo "Updating App Runner service $APP_RUNNER_SERVICE_ARN with image $IMAGE_URI"
-
-          aws apprunner update-service \
-            --service-arn "$APP_RUNNER_SERVICE_ARN" \
-            --source-configuration "ImageRepository={ImageIdentifier=$IMAGE_URI,ImageRepositoryType=ECR}"
-
+          echo "Updating ECS service $ECS_SERVICE in cluster $ECS_CLUSTER"
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --force-new-deployment
