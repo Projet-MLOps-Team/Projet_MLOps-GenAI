@@ -140,156 +140,142 @@ with tab_ml:
         """
     )
 
-    col_left, col_right = st.columns([1, 1])
+    # ========================= FORMULAIRE =========================
+    st.markdown("### 🎯 Profil client / crédit")
 
-# ========================= FORMULAIRE =========================
+    credit_lines = st.number_input(
+        "Lignes de crédit ouvertes (credit_lines_outstanding)",
+        min_value=0, max_value=50, value=5
+    )
 
-st.markdown("### 🎯 Profil client / crédit")
+    loan_amt = st.number_input(
+        "Montant du prêt en cours (€) – loan_amt_outstanding",
+        min_value=0, max_value=1_000_000, value=15_000, step=1_000
+    )
 
-credit_lines = st.number_input(
-    "Lignes de crédit ouvertes (credit_lines_outstanding)",
-    min_value=0, max_value=50, value=5
-)
+    total_debt = st.number_input(
+        "Dette totale actuelle (€) – total_debt_outstanding",
+        min_value=0, max_value=1_000_000, value=25_000, step=1_000
+    )
 
-loan_amt = st.number_input(
-    "Montant du prêt en cours (€) – loan_amt_outstanding",
-    min_value=0, max_value=1_000_000, value=15_000, step=1_000
-)
+    income = st.number_input(
+        "Revenu annuel (€) – income",
+        min_value=1, max_value=1_000_000, value=60_000, step=1_000
+    )
 
-total_debt = st.number_input(
-    "Dette totale actuelle (€) – total_debt_outstanding",
-    min_value=0, max_value=1_000_000, value=25_000, step=1_000
-)
+    years = st.number_input(
+        "Ancienneté dans l'emploi (années) – years_employed",
+        min_value=0, max_value=50, value=10
+    )
 
-income = st.number_input(
-    "Revenu annuel (€) – income",
-    min_value=1, max_value=1_000_000, value=60_000, step=1_000
-)
+    fico = st.number_input(
+        "Score FICO – fico_score",
+        min_value=300, max_value=850, value=720
+    )
 
-years = st.number_input(
-    "Ancienneté dans l'emploi (années) – years_employed",
-    min_value=0, max_value=50, value=10
-)
+    debt_ratio = total_debt / income if income > 0 else 0.0
+    st.metric("Debt ratio calculé", f"{debt_ratio:.2f}")
 
-fico = st.number_input(
-    "Score FICO – fico_score",
-    min_value=300, max_value=850, value=720
-)
+    default_payload = {
+        "credit_lines_outstanding": credit_lines,
+        "loan_amt_outstanding": loan_amt,
+        "total_debt_outstanding": total_debt,
+        "income": income,
+        "years_employed": years,
+        "fico_score": fico,
+        "debt_ratio": debt_ratio,
+    }
 
-debt_ratio = total_debt / income if income > 0 else 0.0
-st.metric("Debt ratio calculé", f"{debt_ratio:.2f}")
+    # (optionnel) petit bloc d'aide en dessous
+    st.markdown("### ℹ️ Comment ça marche ?")
+    st.write("Complète le formulaire ci-dessus puis lance la prédiction ML.")
 
-default_payload = {
-    "credit_lines_outstanding": credit_lines,
-    "loan_amt_outstanding": loan_amt,
-    "total_debt_outstanding": total_debt,
-    "income": income,
-    "years_employed": years,
-    "fico_score": fico,
-    "debt_ratio": debt_ratio,
-}
-
-# (optionnel) petit bloc d'aide en dessous
-st.markdown("### ℹ️ Comment ça marche ?")
-st.write("Complète le formulaire ci-dessus puis lance la prédiction ML.")
-
-lancer = st.button("🚀 Lancer la prédiction ML", type="primary")
-
+    lancer = st.button("🚀 Lancer la prédiction ML", type="primary")
 
     # ========================= PRÉDICTION & AFFICHAGE UX =========================
     if lancer:
-        try:
-            payload = json.loads(payload_str)
-        except json.JSONDecodeError as e:
-            st.error(f"JSON invalide : {e}")
-            payload = None
+        # 👉 on envoie directement le dict, plus de JSON à parser
+        payload = default_payload
 
-        if payload is not None:
-            with st.spinner("Analyse du risque par le modèle…"):
-                try:
-                    raw = ml_predict.invoke({"payload": payload})
-                except Exception as e:
-                    st.error(f"Erreur lors de l’appel de ml_predict : {e}")
-                    raw = None
+        with st.spinner("Analyse du risque par le modèle…"):
+            try:
+                raw = ml_predict.invoke({"payload": payload})
+            except Exception as e:
+                st.error(f"Erreur lors de l’appel de ml_predict : {e}")
+                raw = None
 
-            if raw is not None:
-                # On essaye de parser le JSON retourné par le tool
+        if raw is not None:
+            prediction = None
+            try:
+                parsed = json.loads(raw)
+                prediction = parsed.get("prediction", {})
+            except Exception:
                 prediction = None
-                try:
-                    parsed = json.loads(raw)
-                    prediction = parsed.get("prediction", {})
-                except Exception:
-                    prediction = None
 
-                if prediction is None or not isinstance(prediction, dict):
-                    st.error("La réponse du modèle n’est pas dans le format attendu.")
-                    st.code(raw, language="json")
+            if prediction is None or not isinstance(prediction, dict):
+                st.error("La réponse du modèle n’est pas dans le format attendu.")
+                st.code(raw, language="json")
+            else:
+                label_name = prediction.get("label_name", "Résultat inconnu")
+                risk_level = prediction.get("risk_level", "inconnu")
+                proba_default = prediction.get("proba_default", None)
+                explanation = prediction.get("explanation", "")
+                features_used = prediction.get("features_used", [])
+
+                # --------- Traduction du niveau de risque en jauge ----------
+                if isinstance(proba_default, (float, int)):
+                    proba_pct = max(0.0, min(float(proba_default), 1.0)) * 100
                 else:
-                    label_name = prediction.get("label_name", "Résultat inconnu")
-                    risk_level = prediction.get("risk_level", "inconnu")
-                    proba_default = prediction.get("proba_default", None)
-                    explanation = prediction.get("explanation", "")
-                    features_used = prediction.get("features_used", [])
+                    mapping = {"faible": 15.0, "modéré": 35.0, "élevé": 70.0}
+                    proba_pct = mapping.get(risk_level, 50.0)
 
-                    # --------- Traduction du niveau de risque en jauge ----------
+                if risk_level == "faible":
+                    emoji = "🟢"
+                    texte_risque = "Risque faible"
+                elif risk_level == "modéré":
+                    emoji = "🟠"
+                    texte_risque = "Risque modéré"
+                elif risk_level == "élevé":
+                    emoji = "🔴"
+                    texte_risque = "Risque élevé"
+                else:
+                    emoji = "⚪"
+                    texte_risque = "Risque non déterminé"
+
+                st.markdown("---")
+                st.subheader("🧠 Résultat de l’analyse du modèle")
+
+                col_r1, col_r2 = st.columns([2, 1])
+                with col_r1:
+                    st.markdown(
+                        f"""
+                        **Verdict : {emoji} {label_name}**  
+                        **Niveau de risque : {texte_risque}**
+                        """
+                    )
                     if isinstance(proba_default, (float, int)):
-                        proba_pct = max(0.0, min(float(proba_default), 1.0)) * 100
-                    else:
-                        # fallback selon risk_level
-                        mapping = {"faible": 15.0, "modéré": 35.0, "élevé": 70.0}
-                        proba_pct = mapping.get(risk_level, 50.0)
-
-                    # Couleur / emoji selon le risque
-                    if risk_level == "faible":
-                        emoji = "🟢"
-                        texte_risque = "Risque faible"
-                    elif risk_level == "modéré":
-                        emoji = "🟠"
-                        texte_risque = "Risque modéré"
-                    elif risk_level == "élevé":
-                        emoji = "🔴"
-                        texte_risque = "Risque élevé"
-                    else:
-                        emoji = "⚪"
-                        texte_risque = "Risque non déterminé"
-
-                    st.markdown("---")
-                    st.subheader("🧠 Résultat de l’analyse du modèle")
-
-                    # Bloc résumé pour un client
-                    col_r1, col_r2 = st.columns([2, 1])
-                    with col_r1:
                         st.markdown(
-                            f"""
-                            **Verdict : {emoji} {label_name}**  
-                            **Niveau de risque : {texte_risque}**
-                            """
+                            f"Le modèle estime une probabilité de défaut d’environ **{proba_pct:.1f}%**."
                         )
-                        if isinstance(proba_default, (float, int)):
-                            st.markdown(
-                                f"Le modèle estime une probabilité de défaut d’environ **{proba_pct:.1f}%**."
-                            )
-                        if explanation:
-                            st.markdown(f"📝 *{explanation}*")
+                    if explanation:
+                        st.markdown(f"📝 *{explanation}*")
 
-                    with col_r2:
-                        st.markdown("### 📊 Jauge de risque")
-                        st.progress(int(proba_pct))
+                with col_r2:
+                    st.markdown("### 📊 Jauge de risque")
+                    st.progress(int(proba_pct))
 
-                    # Features utilisées – version simple
-                    if features_used:
-                        st.markdown("### 🔍 Variables prises en compte")
-                        st.write(", ".join(features_used))
+                if features_used:
+                    st.markdown("### 🔍 Variables prises en compte")
+                    st.write(", ".join(features_used))
 
-                    # Détails techniques en expander
-                    with st.expander("🔧 Détails techniques / JSON brut"):
-                        st.markdown("**Réponse brute du tool `ml_predict` :**")
-                        st.code(raw, language="json")
-                        try:
-                            st.markdown("**Vue JSON parsée :**")
-                            st.json(parsed)
-                        except Exception:
-                            pass
+                with st.expander("🔧 Détails techniques / JSON brut"):
+                    st.markdown("**Réponse brute du tool `ml_predict` :**")
+                    st.code(raw, language="json")
+                    try:
+                        st.markdown("**Vue JSON parsée :**")
+                        st.json(parsed)
+                    except Exception:
+                        pass
 
     st.markdown("---")
 
