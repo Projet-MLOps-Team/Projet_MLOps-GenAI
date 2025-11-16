@@ -173,19 +173,42 @@ except Exception as e:
     remote_model = None
 
 
-def _align_features(df: pd.DataFrame):
-    """Aligne l'ordre et le set de features avec ceux utilisés au fit."""
+# ========= Valeurs par défaut & préparation des features =========
+
+# À ajuster avec les vraies moyennes/medians de ton dataset
+DEFAULT_FEATURE_VALUES: Dict[str, Any] = {
+    "credit_lines_outstanding": 5,
+    "loan_amt_outstanding": 15000,
+    "total_debt_outstanding": 25000,
+    "income": 60000,
+    "years_employed": 5,
+    "fico_score": 700,
+    "debt_ratio": 0.3,
+}
+
+
+def _prepare_features(partial_features: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Complète un dictionnaire partiel de features avec des valeurs par défaut.
+    L'utilisateur peut ne fournir que 3 ou 4 variables, le reste est imputé.
+    """
+    full = DEFAULT_FEATURE_VALUES.copy()
+    full.update(partial_features)
+    return full
+
+
+def _align_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Aligne l'ordre des features avec celles du modèle, en créant les colonnes manquantes si besoin."""
     feature_names = getattr(remote_model, "feature_names_in_", None)
     if feature_names is None:
         return df
 
-    missing = [f for f in feature_names if f not in df.columns]
-    if missing:
-        raise ValueError(
-            f"Features manquantes pour le modèle : {missing}. "
-            f"Features reçues : {list(df.columns)}"
-        )
+    # Crée les colonnes manquantes si besoin
+    for f in feature_names:
+        if f not in df.columns:
+            df[f] = DEFAULT_FEATURE_VALUES.get(f, 0.0)
 
+    # Réordonne les colonnes dans l'ordre attendu par le modèle
     return df[list(feature_names)]
 
 
@@ -194,7 +217,13 @@ def _predict_remote(features: Dict[str, Any]) -> Dict[str, Any]:
     if remote_model is None:
         raise RuntimeError("Modèle distant non chargé.")
 
-    df = pd.DataFrame([features])
+    # features = ce que l'utilisateur a réellement fourni (potentiellement partiel)
+    partial_keys = list(features.keys())
+
+    # On complète avec des valeurs par défaut
+    full_features = _prepare_features(features)
+
+    df = pd.DataFrame([full_features])
     df = _align_features(df)
 
     y_pred = remote_model.predict(df)[0]
@@ -217,6 +246,7 @@ def _predict_remote(features: Dict[str, Any]) -> Dict[str, Any]:
         else:
             risk_level = "élevé"
 
+    # Explication de base
     if proba_default is not None and risk_level is not None:
         explanation = (
             f"Le modèle estime une probabilité de défaut d’environ "
@@ -227,6 +257,15 @@ def _predict_remote(features: Dict[str, Any]) -> Dict[str, Any]:
             "Le modèle ne fournit pas de probabilité explicite, seulement une classe prédite."
         )
 
+    # Si l'entrée est partielle, on ajoute un disclaimer
+    feature_names = getattr(remote_model, "feature_names_in_", None)
+    if feature_names is not None and set(partial_keys) != set(feature_names):
+        explanation += (
+            " Attention : toutes les variables du modèle n’ont pas été fournies par "
+            "l’utilisateur. Des valeurs moyennes par défaut ont été utilisées pour compléter "
+            "les features manquantes. La prédiction est donc indicative."
+        )
+
     return {
         "label": int(y_pred),
         "label_name": label_name,
@@ -234,6 +273,7 @@ def _predict_remote(features: Dict[str, Any]) -> Dict[str, Any]:
         "risk_level": risk_level,
         "explanation": explanation,
         "features_used": list(df.columns),
+        "features_provided": partial_keys,
     }
 
 
@@ -250,7 +290,9 @@ def _jsonable(x: Any) -> Any:
 
 @tool("ml_predict", args_schema=MLPredictInput)
 def ml_predict(payload: Dict[str, Any]) -> str:
-    """Effectue une prédiction via un modèle .pkl hébergé sur S3, avec sortie enrichie."""
+    """Effectue une prédiction via un modèle .pkl hébergé sur S3, avec sortie enrichie.
+    Le payload peut être partiel : les features manquantes sont complétées par des valeurs moyennes.
+    """
     try:
         result = _predict_remote(payload)
         pretty = {
@@ -286,6 +328,9 @@ d'utiliser intelligemment la mémoire issue du RAG, et de produire une réponse 
 3) ML Prediction (`ml_predict`) :
    - Utilise-le si l’utilisateur demande une estimation de risque crédit ou une prédiction à partir de features.
    - Transmets fidèlement les features fournies et explique le résultat (classe, probabilité, niveau de risque).
+   - Tu peux appeler `ml_predict` même si tu n’as que 3 ou 4 features.
+   - Envoie toujours les features fournies par l’utilisateur ; le modèle complètera le reste avec des valeurs moyennes.
+   - Explique clairement à l’utilisateur si la prédiction est basée sur des données partielles.
 
 4) Calculator (`calculator`) :
    - Utilise-le pour les calculs mathématiques explicites (montants, pourcentages, ratios).
@@ -348,7 +393,6 @@ def chat(agent, messages: list, recursion_limit: int = 40) -> str:
         return f"AGENT_ERROR: {e}"
 
 
-
 # ========== MAIN ==========
 if __name__ == "__main__":
     print("Bootstrapping agent...")
@@ -371,8 +415,7 @@ if __name__ == "__main__":
         chat(
             agent,
             "Appelle ml_predict avec "
-            "{'credit_lines_outstanding': 5, 'loan_amt_outstanding': 15000, "
-            "'total_debt_outstanding': 25000, 'income': 60000, 'years_employed': 10, "
-            "'fico_score': 720, 'debt_ratio': 0.3} et explique le résultat.",
+            "{'income': 60000, 'fico_score': 720, 'debt_ratio': 0.3} "
+            "et explique le résultat.",
         )
     )
