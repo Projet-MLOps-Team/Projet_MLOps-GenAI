@@ -22,6 +22,15 @@ if "messages" not in st.session_state:
 if "uploaded_df" not in st.session_state:
     st.session_state.uploaded_df = None
 
+# 👉 Flag pour ne lancer les ballons qu'une seule fois
+if "balloons_done" not in st.session_state:
+    st.session_state.balloons_done = False
+
+# 👉 Animation au premier chargement de l'app
+if not st.session_state.balloons_done:
+    st.balloons()
+    st.session_state.balloons_done = True
+
 agent = st.session_state.agent
 
 # ========= PAGE HEADER GLOBAL =========
