@@ -51,9 +51,19 @@ with tab_eda:
 
     if df is None:
         st.info("👉 Charge un fichier CSV pour commencer l'analyse.")
-        st.stop()
+    else:
+        st.success(f"Dataset chargé : **{df.shape[0]} lignes**, **{df.shape[1]} colonnes**")
 
-    st.success(f"Dataset chargé : **{df.shape[0]} lignes**, **{df.shape[1]} colonnes**")
+        st.markdown("### 👀 Aperçu du dataset")
+        st.dataframe(df.head(), use_container_width=True)
+
+        default_rate = df["default"].mean() * 100
+        colA, colB, colC = st.columns(3)
+        colA.metric("Taux de défaut global", f"{default_rate:.1f} %")
+        colB.metric("Clients sains", f"{(df['default']==0).sum()}")
+        colC.metric("Clients en défaut", f"{(df['default']==1).sum()}")
+
+        st.markdown("---")
 
     # ================= APERCU =================
     st.markdown("### 👀 Aperçu du dataset")
