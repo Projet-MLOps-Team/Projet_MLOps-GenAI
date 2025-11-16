@@ -16,7 +16,7 @@ jobs:
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}              # ex: eu-west-3
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}      # ex: mlopsgenai-ecr  (juste le nom du repo)
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}      # ex: mlopsgenai-ecr  (nom du repo)
       ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}            # ex: mlopsgenai-ecs-cluster (NOM, pas ARN)
       ECS_SERVICE: ${{ secrets.ECS_SERVICE }}            # ex: mlopsgenai-service      (NOM, pas ARN)
 
@@ -43,8 +43,8 @@ jobs:
           IMAGE_TAG=latest
           IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-          echo "Building image $IMAGE_URI"
-          docker build -t "$IMAGE_URI" .
+          echo "Building image $IMAGE_URI for linux/amd64"
+          docker build --platform linux/amd64 -t "$IMAGE_URI" .
 
           echo "Pushing image to ECR..."
           docker push "$IMAGE_URI"
