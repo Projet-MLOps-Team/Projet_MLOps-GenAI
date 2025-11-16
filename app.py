@@ -7,7 +7,7 @@ from agent import build_agent, chat, ml_predict  # ton fichier agent.py
 
 # ========== CONFIG STREAMLIT ==========
 st.set_page_config(
-    page_title="GENAI – Banking SuperAI App",
+    page_title="GENAI – Banking SuperAIApp",
     page_icon="🤖",
     layout="wide"
 )
@@ -25,7 +25,7 @@ if "uploaded_df" not in st.session_state:
 agent = st.session_state.agent
 
 # ========= PAGE HEADER GLOBAL =========
-st.title("GENAI – Banking SuperAI App")
+st.title("GENAI – Banking SuperAIApp")
 
 # ========= NAVIGATION PAR ONGLET EN HAUT =========
 tab_eda, tab_ml, tab_chat = st.tabs(["📊 EDA", "🔮 Prédiction ML", "💬 Chatbot"])
