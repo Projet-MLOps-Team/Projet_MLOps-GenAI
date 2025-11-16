@@ -29,12 +29,13 @@ Objectif : aider une banque de détail à **analyser le risque de défaut** et *
 
 Dockerfile                              # Image Streamlit + agent
 Loan_Data.csv                           # Données brutes de crédit
-README.md                               # Documentation du projet
+eda.py                                  # Script d’EDA et préparation de datasetfinal.csv
+datasetfinal.csv                        # Données nettoyées / feature engineering
+train.py                                # Entrainement & MLFLOW
 agent.py                                # Agent Sorbonnio (RAG, ML, Calc, Web)
 app.py                                  # App Streamlit (EDA, Prédiction ML, Chatbot)
 conditions-tarifaires-particuliers-2025.pdf  # Document RAG
-datasetfinal.csv                        # Données nettoyées / feature engineering
-eda.py                                  # Script d’EDA et préparation de datasetfinal.csv
+README.md                               # Documentation du projet
 requirements.txt                        # Dépendances Python
 ```
 
