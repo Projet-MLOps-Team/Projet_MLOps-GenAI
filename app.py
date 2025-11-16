@@ -142,66 +142,59 @@ with tab_ml:
 
     col_left, col_right = st.columns([1, 1])
 
-    # ========================= FORMULAIRE =========================
-    with col_left:
-        st.markdown("### 🎯 Profil client / crédit")
+# ========================= FORMULAIRE =========================
 
-        credit_lines = st.number_input(
-            "Lignes de crédit ouvertes (credit_lines_outstanding)",
-            min_value=0, max_value=50, value=5
-        )
+st.markdown("### 🎯 Profil client / crédit")
 
-        loan_amt = st.number_input(
-            "Montant du prêt en cours (€) – loan_amt_outstanding",
-            min_value=0, max_value=1_000_000, value=15_000, step=1_000
-        )
+credit_lines = st.number_input(
+    "Lignes de crédit ouvertes (credit_lines_outstanding)",
+    min_value=0, max_value=50, value=5
+)
 
-        total_debt = st.number_input(
-            "Dette totale actuelle (€) – total_debt_outstanding",
-            min_value=0, max_value=1_000_000, value=25_000, step=1_000
-        )
+loan_amt = st.number_input(
+    "Montant du prêt en cours (€) – loan_amt_outstanding",
+    min_value=0, max_value=1_000_000, value=15_000, step=1_000
+)
 
-        income = st.number_input(
-            "Revenu annuel (€) – income",
-            min_value=1, max_value=1_000_000, value=60_000, step=1_000
-        )
+total_debt = st.number_input(
+    "Dette totale actuelle (€) – total_debt_outstanding",
+    min_value=0, max_value=1_000_000, value=25_000, step=1_000
+)
 
-        years = st.number_input(
-            "Ancienneté dans l'emploi (années) – years_employed",
-            min_value=0, max_value=50, value=10
-        )
+income = st.number_input(
+    "Revenu annuel (€) – income",
+    min_value=1, max_value=1_000_000, value=60_000, step=1_000
+)
 
-        fico = st.number_input(
-            "Score FICO – fico_score",
-            min_value=300, max_value=850, value=720
-        )
+years = st.number_input(
+    "Ancienneté dans l'emploi (années) – years_employed",
+    min_value=0, max_value=50, value=10
+)
 
-        debt_ratio = total_debt / income if income > 0 else 0.0
-        st.metric("Debt ratio calculé", f"{debt_ratio:.2f}")
+fico = st.number_input(
+    "Score FICO – fico_score",
+    min_value=300, max_value=850, value=720
+)
 
-        default_payload = {
-            "credit_lines_outstanding": credit_lines,
-            "loan_amt_outstanding": loan_amt,
-            "total_debt_outstanding": total_debt,
-            "income": income,
-            "years_employed": years,
-            "fico_score": fico,
-            "debt_ratio": debt_ratio
-        }
+debt_ratio = total_debt / income if income > 0 else 0.0
+st.metric("Debt ratio calculé", f"{debt_ratio:.2f}")
 
-    # ========================= JSON EDITABLE =========================
-    with col_right:
-        st.markdown("### 🧾 Payload JSON (optionnel)")
+default_payload = {
+    "credit_lines_outstanding": credit_lines,
+    "loan_amt_outstanding": loan_amt,
+    "total_debt_outstanding": total_debt,
+    "income": income,
+    "years_employed": years,
+    "fico_score": fico,
+    "debt_ratio": debt_ratio,
+}
 
-        st.caption("Tu peux garder ce JSON tel quel ou l’ajuster manuellement avant la prédiction.")
+# (optionnel) petit bloc d'aide en dessous
+st.markdown("### ℹ️ Comment ça marche ?")
+st.write("Complète le formulaire ci-dessus puis lance la prédiction ML.")
 
-        payload_str = st.text_area(
-            "Payload envoyé à `ml_predict` :",
-            value=json.dumps(default_payload, indent=2),
-            height=260
-        )
+lancer = st.button("🚀 Lancer la prédiction ML", type="primary")
 
-        lancer = st.button("🚀 Lancer la prédiction ML", type="primary")
 
     # ========================= PRÉDICTION & AFFICHAGE UX =========================
     if lancer:
@@ -299,10 +292,6 @@ with tab_ml:
                             pass
 
     st.markdown("---")
-    st.caption(
-        "💡 Astuce : cette page sert pour les utilisateurs métier. "
-        "Les développeurs peuvent récupérer le payload et la réponse brute dans l’expander."
-    )
 
 
 # ==================== PAGE 3 : CHATBOT ====================
@@ -314,7 +303,9 @@ with tab_chat:
         Exemple de requêtes :
         - *“Résume-moi les frais de tenue de compte pour un non résident.”*  
         - *“Utilise `rag_search` pour extraire les tarifs de découvert.”*  
-        - *“Appelle `ml_predict` avec {'credit_lines_outstanding': 5, ...} et explique le résultat.”*
+        - *“Quelles actualités en France ces derniers jours ?”*
+        - *“Prédis le risque de crédit pour une personne endettée de 100k€, gagnant 50k€, salariée depuis 10ans ?”*
+        - *“Quels outils as tu ?”*
         """
     )
 
