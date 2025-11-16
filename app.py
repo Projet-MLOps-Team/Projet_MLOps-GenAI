@@ -7,7 +7,7 @@ from agent import build_agent, chat, ml_predict  # ton fichier agent.py
 
 # ========== CONFIG STREAMLIT ==========
 st.set_page_config(
-    page_title="GENAI – Banking Lab 3",
+    page_title="MLOPS x GENAI – AI App Duda Lab",
     page_icon="🤖",
     layout="wide"
 )
@@ -34,7 +34,7 @@ if not st.session_state.balloons_done:
 agent = st.session_state.agent
 
 # ========= PAGE HEADER GLOBAL =========
-st.title("MLOPS x GENAI – AI App Duda Lab ")
+st.title("MLOPS x GENAI – AI App Duda Lab")
 
 # ========= NAVIGATION PAR ONGLET EN HAUT =========
 tab_eda, tab_ml, tab_chat = st.tabs(["📊 EDA", "🔮 Prédiction ML", "💬 Chatbot"])
