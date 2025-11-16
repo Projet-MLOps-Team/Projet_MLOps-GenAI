@@ -14,11 +14,11 @@ jobs:
       contents: read
 
     env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}            # ex: eu-west-3
+      AWS_REGION: ${{ secrets.AWS_REGION }}              # ex: eu-west-3
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}    # ex: mlopsgenai-ecr
-      ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}          # ex: mlopsgenai-ecs-cluster
-      ECS_SERVICE: ${{ secrets.ECS_SERVICE }}          # ex: mlopsgenai-service
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}      # ex: mlopsgenai-ecr  (juste le nom du repo)
+      ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}            # ex: mlopsgenai-ecs-cluster (NOM, pas ARN)
+      ECS_SERVICE: ${{ secrets.ECS_SERVICE }}            # ex: mlopsgenai-service      (NOM, pas ARN)
 
     steps:
       - name: Checkout repository
@@ -38,20 +38,33 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
         run: |
           IMAGE_TAG=latest
           IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
           echo "Building image $IMAGE_URI"
-          docker build -t $IMAGE_URI .
+          docker build -t "$IMAGE_URI" .
 
           echo "Pushing image to ECR..."
-          docker push $IMAGE_URI
+          docker push "$IMAGE_URI"
 
-          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to ECS (force new deployment)
+        env:
+          ECS_CLUSTER: ${{ env.ECS_CLUSTER }}
+          ECS_SERVICE: ${{ env.ECS_SERVICE }}
         run: |
+          echo "Cluster : $ECS_CLUSTER"
+          echo "Service : $ECS_SERVICE"
+
+          echo "Checking that ECS service exists..."
+          aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE"
+
+          echo "Forcing new deployment..."
           aws ecs update-service \
             --cluster "$ECS_CLUSTER" \
             --service "$ECS_SERVICE" \
